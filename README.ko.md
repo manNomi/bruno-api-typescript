@@ -4,6 +4,8 @@
 
 Bruno API 컬렉션을 OpenAPI 스펙으로 자동 변환하고, 버전 간 변경사항을 자동으로 감지하여 Changelog를 생성합니다.
 
+**[🚀 5분 빠른 시작](./QUICKSTART.md)** | **[영문 README](./README.md)**
+
 ## ✨ 주요 기능
 
 - **🔄 Bruno → OpenAPI**: .bru 파일을 OpenAPI 3.0으로 자동 변환
