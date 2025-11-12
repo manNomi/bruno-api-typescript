@@ -112,6 +112,40 @@ git push
 
 ---
 
+## 🔗 Bruno 저장소가 별도로 있나요?
+
+**Bruno와 프론트엔드가 다른 저장소라면?**
+
+### ⚡ 자동 연동 가능합니다!
+
+```bash
+# 간단한 설정 스크립트 실행
+bash scripts/setup-cross-repo.sh
+```
+
+또는 자세한 방법: **[Cross-Repo 연동 가이드](./docs/CROSS-REPO-SYNC.md)**
+
+### 작동 방식
+
+```
+[Bruno 저장소]
+   ↓ Bruno 파일 변경
+   ↓ Push
+   ↓
+자동 알림 발송
+   ↓
+[프론트엔드 저장소]
+   ↓ GitHub Action 실행
+   ↓ OpenAPI 자동 생성
+   ↓ PR 자동 생성
+   ↓
+완료! 🎉
+```
+
+**5분 설정으로 완전 자동화!**
+
+---
+
 ## 🔥 핵심 기능 요약
 
 ### ✅ 자동으로 되는 것들
@@ -121,11 +155,12 @@ git push
 3. **PR에 자동 코멘트**
 4. **Swagger UI 자동 배포**
 5. **Changelog 자동 생성**
+6. **별도 저장소 자동 연동** 🆕
 
 ### 📝 직접 해야 하는 것
 
 1. **Bruno 파일 작성** (docs 블록만 정확히!)
-2. **첫 설정** (GitHub Pages 활성화)
+2. **첫 설정** (GitHub Pages 활성화 or Cross-Repo 설정)
 
 ---
 
