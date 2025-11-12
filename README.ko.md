@@ -12,6 +12,8 @@ Bruno API 컬렉션을 OpenAPI 스펙으로 자동 변환하고, 버전 간 변�
 - **📝 Changelog 자동 생성**: Markdown, JSON, HTML 형식으로 변경 이력 생성
 - **🎯 도메인별 그룹화**: 폴더 구조 기반 자동 분류
 - **🔍 깊은 스키마 분석**: 중첩 객체 내 필드 레벨 변경사항까지 추적
+- **🌐 Swagger UI 자동 배포**: GitHub Pages로 API 문서 자동 게시 🆕
+- **🤖 PR 자동 리뷰**: PR에 변경사항 자동 코멘트 🆕
 
 ## 📦 설치
 
@@ -254,6 +256,89 @@ docs {
 - ✅ 요청에 선택적 필드 추가
 - ✅ 문서 업데이트
 
+## 🌐 프론트엔드를 위한 기능
+
+### 📖 Swagger UI 자동 배포
+
+Bruno 파일이 수정되면 자동으로 **Swagger UI**가 GitHub Pages에 배포됩니다!
+
+#### 접속 방법
+
+```
+https://your-team.github.io/your-repo/
+```
+
+3가지 페이지가 자동 생성됩니다:
+
+1. **📖 API 명세서 (Swagger UI)**
+   - 모든 API 엔드포인트 목록
+   - 요청/응답 스키마
+   - 실제 API 테스트 가능
+   - 도메인별 그룹화
+
+2. **🔄 변경사항 시각화 (Changelog HTML)**
+   - 시각적 대시보드
+   - Breaking changes 강조
+   - Before/After 비교
+   - 도메인별 변경사항
+
+3. **📥 OpenAPI 다운로드**
+   - OpenAPI 3.0 스펙 파일
+   - 다른 도구에서 사용 가능
+
+#### 설정 방법
+
+`.github/workflows/api-docs-deploy.yml` 파일이 자동으로:
+- main 브랜치에 머지되면 실행
+- OpenAPI 생성
+- Swagger UI 페이지 생성
+- GitHub Pages에 배포
+
+**GitHub Pages 활성화**:
+1. Repository Settings → Pages
+2. Source: Deploy from a branch
+3. Branch: `gh-pages` / `root`
+4. Save
+
+### 🤖 PR 자동 리뷰
+
+PR을 생성하면 자동으로 변경사항이 코멘트로 달립니다!
+
+#### PR 코멘트 예시
+
+```markdown
+## 🔄 API 변경사항
+
+### ⚠️ **Breaking Changes 발견!**
+> 기존 코드를 깨뜨릴 수 있는 변경사항이 있습니다.
+
+### 📝 변경된 Bruno 파일
+bruno/applications/get-competitors.bru
+
+### 📊 상세 변경사항
+⚠️  BREAKING CHANGES:
+   GET    /applications/competitors
+      ~ response.gpa (number → string)
+
+### 🔗 유용한 링크
+- 📖 [API 명세서 보기](링크)
+- 🔄 [변경사항 시각화](링크)
+- 📥 [OpenAPI 다운로드](링크)
+```
+
+#### 자동으로 수행되는 작업
+
+1. ✅ 변경된 Bruno 파일 감지
+2. ✅ OpenAPI 생성 및 비교
+3. ✅ Breaking changes 식별
+4. ✅ PR에 자동 코멘트
+5. ✅ Swagger UI 링크 제공
+6. ✅ Changelog HTML 링크 제공
+
+**프론트엔드 개발자는 PR만 보면 모든 변경사항을 5분 안에 파악!**
+
+자세한 사용법은 **[프론트엔드 가이드](./docs/FRONTEND-GUIDE.md)** 참조
+
 ## 🔗 CI/CD 연동
 
 ### GitHub Actions 예시
@@ -375,8 +460,22 @@ open docs/changelog.html
 
 ## 📚 추가 문서
 
-- [Bruno 파일 작성 가이드](./docs/BRUNO-GUIDE.md) - 백엔드 개발자용
-- [팀 워크플로우 가이드](./docs/WORKFLOW.md) - 전체 팀용
+- **[Bruno 파일 작성 가이드](./docs/BRUNO-GUIDE.md)** - 백엔드 개발자용
+  - Bruno 파일 기본 구조
+  - 필수 작성 규칙
+  - 실전 예시와 템플릿
+
+- **[프론트엔드 가이드](./docs/FRONTEND-GUIDE.md)** - 프론트엔드 개발자용 🆕
+  - API 변경사항 확인하는 3가지 방법
+  - Swagger UI 사용법
+  - Breaking Changes 대응
+  - 5분 워크플로우
+
+- **[팀 워크플로우 가이드](./docs/WORKFLOW.md)** - 전체 팀용
+  - 백엔드-프론트엔드 협업 프로세스
+  - CI/CD 자동화
+  - FAQ
+
 - [영문 README](./README.md) - English version
 
 ## 🎯 다음 단계 (Roadmap)
@@ -386,6 +485,8 @@ open docs/changelog.html
 - [x] Changelog 생성 (MD/JSON/HTML)
 - [x] Breaking change 식별
 - [x] CLI 도구
+- [x] Swagger UI 자동 배포
+- [x] PR 자동 리뷰
 - [ ] TypeScript 타입 자동 생성
 - [ ] API 클라이언트 자동 생성
 - [ ] MSW Mock 자동 생성
