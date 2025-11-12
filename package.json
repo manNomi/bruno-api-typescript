@@ -1,0 +1,41 @@
+{
+  "name": "bruno-openapi-sync",
+  "version": "0.2.0",
+  "description": "Bruno .bru files to OpenAPI with TypeScript types, API client, MSW mocks, and change tracking",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "bruno-sync": "./dist/cli/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build",
+    "test": "node --test"
+  },
+  "keywords": [
+    "bruno",
+    "openapi",
+    "typescript",
+    "api",
+    "msw",
+    "mocks",
+    "codegen",
+    "swagger",
+    "rest-api"
+  ],
+  "author": "MANWOOK",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^11.1.0",
+    "glob": "^10.3.10",
+    "yaml": "^2.3.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
