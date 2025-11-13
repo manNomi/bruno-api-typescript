@@ -4,7 +4,7 @@
 
 Bruno API 컬렉션을 OpenAPI 스펙으로 자동 변환하고, 버전 간 변경사항을 자동으로 감지하여 Changelog를 생성합니다.
 
-**[🚀 5분 빠른 시작](./QUICKSTART.md)** | **[영문 README](./README.md)**
+**[🚀 5분 빠른 시작](./QUICKSTART.md)** | **[⚙️ 완전 설정 가이드](./SETUP-GUIDE.md)** | **[영문 README](./README.md)**
 
 **개발자 가이드**: [📝 Bruno 파일 작성](./docs/BRUNO-GUIDE.md) | [🎨 프론트엔드](./docs/FRONTEND-GUIDE.md) | [⚙️ GitHub Actions 설정](./docs/GITHUB-ACTIONS-SETUP.md)
 
