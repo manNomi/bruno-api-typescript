@@ -6,7 +6,7 @@ Convert your Bruno API collections to OpenAPI specifications with automatic chan
 
 **[한국어 문서 (Korean)](./README.ko.md)** | **[빠른 시작 (5분)](./QUICKSTART.md)**
 
-**개발자 가이드**: [🔧 백엔드](./docs/BACKEND-GUIDE.md) | [🎨 프론트엔드](./docs/FRONTEND-GUIDE.md) | [📝 Bruno 파일 작성](./docs/BRUNO-GUIDE.md) | [🤝 팀 워크플로우](./docs/WORKFLOW.md)
+**개발자 가이드**: [🔧 백엔드](./docs/BACKEND-GUIDE.md) | [🎨 프론트엔드](./docs/FRONTEND-GUIDE.md) | [⚙️ 프론트엔드 설정](./docs/FRONTEND-SETUP.md) | [📝 Bruno 파일 작성](./docs/BRUNO-GUIDE.md) | [🤝 팀 워크플로우](./docs/WORKFLOW.md)
 
 ## ✨ Features
 

@@ -6,7 +6,7 @@ Bruno API 컬렉션을 OpenAPI 스펙으로 자동 변환하고, 버전 간 변�
 
 **[🚀 5분 빠른 시작](./QUICKSTART.md)** | **[영문 README](./README.md)**
 
-**개발자 가이드**: [🔧 백엔드](./docs/BACKEND-GUIDE.md) | [🎨 프론트엔드](./docs/FRONTEND-GUIDE.md) | [📝 Bruno 파일 작성](./docs/BRUNO-GUIDE.md) | [🤝 팀 워크플로우](./docs/WORKFLOW.md)
+**개발자 가이드**: [🔧 백엔드](./docs/BACKEND-GUIDE.md) | [🎨 프론트엔드](./docs/FRONTEND-GUIDE.md) | [⚙️ 프론트엔드 설정](./docs/FRONTEND-SETUP.md) | [📝 Bruno 파일 작성](./docs/BRUNO-GUIDE.md) | [🤝 팀 워크플로우](./docs/WORKFLOW.md)
 
 ## ✨ 주요 기능
 
@@ -479,7 +479,13 @@ open docs/changelog.html
   - 실전 예시와 템플릿
 
 #### 🎨 프론트엔드 개발자
-- **[프론트엔드 개발자 가이드](./docs/FRONTEND-GUIDE.md)** 🆕
+- **[프론트엔드 설정 가이드](./docs/FRONTEND-SETUP.md)** 🆕
+  - Bruno 폴더만 클론하기 (Git sparse checkout)
+  - 전역 명령어 설정
+  - 프론트엔드 프로젝트 통합
+  - 자동화 스크립트
+
+- **[프론트엔드 개발자 가이드](./docs/FRONTEND-GUIDE.md)**
   - API 변경사항 확인하는 3가지 방법
   - Swagger UI 사용법
   - Breaking Changes 대응
