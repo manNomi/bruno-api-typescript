@@ -429,10 +429,14 @@ jobs:
             --diff \
             --changelog ./public/CHANGELOG.md
 
+      - name: Generate TypeScript Types
+        run: |
+          npx openapi-typescript ./public/openapi.json -o ./src/types/api.ts
+
       - name: Check for changes
         id: changes
         run: |
-          git add public/
+          git add public/ src/types/
           if git diff --staged --quiet; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
           else
@@ -499,16 +503,25 @@ git checkout api-sync-123
 # 3. Changelog 확인
 cat public/CHANGELOG.md
 
-# 4. Breaking이 있으면 코드 수정
-grep -r "oldField" src/  # 영향 받는 코드 찾기
-# 코드 수정...
+# 4. 자동 생성된 타입 확인
+cat src/types/api.ts
+# ✅ Bruno 명세에서 자동 생성된 TypeScript 타입!
 
-# 5. 테스트
-npm run test
+# 5. Breaking이 있으면 코드 수정
+# TypeScript 컴파일러가 자동으로 에러 표시!
 npm run build
+# ❌ Error: Property 'gpa' is of type 'string', not 'number'
 
-# 6. PR 승인 & 머지
-# 또는 추가 커밋 후 머지
+# 6. 코드 수정
+# src/components/CompetitorCard.tsx
+# const gpa: number = data.gpa;  ← 컴파일 에러!
+# const gpa = parseFloat(data.gpa);  ← 수정
+
+# 7. 테스트
+npm run test
+npm run build  # ✅ 통과!
+
+# 8. PR 승인 & 머지
 ```
 
 ---
@@ -697,12 +710,258 @@ cd ../bruno-api && git checkout -b feature/user-api
 
 ---
 
+## TypeScript 타입 자동 생성
+
+### 프론트엔드에서 타입 사용하기
+
+GitHub Actions가 자동으로 생성한 타입을 사용:
+
+```typescript
+// src/types/api.ts (자동 생성됨)
+export interface paths {
+  "/users/profile": {
+    get: {
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              id: number;
+              username: string;
+              email: string;
+              createdAt: string;
+            };
+          };
+        };
+      };
+    };
+  };
+}
+
+// src/api/client.ts (수동 작성)
+import type { paths } from '../types/api';
+
+type UserProfile = paths['/users/profile']['get']['responses'][200]['content']['application/json'];
+
+export async function getUserProfile(): Promise<UserProfile> {
+  const response = await fetch('/users/profile');
+  return response.json();
+}
+
+// src/components/Profile.tsx (사용)
+import { getUserProfile } from '../api/client';
+
+const Profile = () => {
+  const [user, setUser] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    getUserProfile().then(setUser);
+  }, []);
+
+  // ✅ TypeScript가 자동 완성 및 타입 체크!
+  return <div>{user?.username}</div>;
+};
+```
+
+### 더 편한 타입 사용 (openapi-fetch)
+
+```bash
+npm install openapi-fetch
+```
+
+```typescript
+// src/api/client.ts
+import createClient from 'openapi-fetch';
+import type { paths } from '../types/api';
+
+const client = createClient<paths>({ baseUrl: 'https://api.example.com' });
+
+// src/components/Profile.tsx
+const { data, error } = await client.GET('/users/profile');
+//     ^? { id: number; username: string; email: string; ... }
+//        ✅ 완벽한 타입 추론!
+
+if (data) {
+  console.log(data.username);  // ✅ 자동 완성
+  console.log(data.invalid);   // ❌ 컴파일 에러!
+}
+```
+
+### React Query와 함께 사용
+
+```typescript
+// src/hooks/useUserProfile.ts
+import { useQuery } from '@tanstack/react-query';
+import { client } from '../api/client';
+
+export function useUserProfile() {
+  return useQuery({
+    queryKey: ['user', 'profile'],
+    queryFn: async () => {
+      const { data, error } = await client.GET('/users/profile');
+      if (error) throw error;
+      return data;
+      //     ^? { id: number; username: string; ... }
+      //        ✅ 완벽한 타입!
+    },
+  });
+}
+
+// src/components/Profile.tsx
+const { data: user } = useUserProfile();
+//          ^? { id: number; username: string; ... }
+
+return <div>{user?.username}</div>;  // ✅ 타입 안전!
+```
+
+---
+
+## 백엔드 개발자가 해야 할 일
+
+### ✅ 단 하나: Bruno docs 블록 정확하게 작성
+
+```bru
+meta {
+  name: Get User Profile
+  type: http
+}
+
+get /users/profile
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+docs {
+  ```json
+  {
+    "id": 1,
+    "username": "johndoe",
+    "email": "john@example.com",
+    "createdAt": "2025-01-01T00:00:00Z"
+  }
+  ```
+}
+```
+
+**이것만 하면 끝!** 나머지는 모두 자동:
+1. ✅ PR에 자동 코멘트
+2. ✅ GitHub Pages에 Swagger UI 배포
+3. ✅ 프론트엔드에 알림
+4. ✅ OpenAPI 생성
+5. ✅ **TypeScript 타입 자동 생성**
+6. ✅ 프론트엔드 PR 자동 생성
+
+---
+
+## 프론트엔드 개발자 체크리스트
+
+### Breaking Changes 대응
+
+```typescript
+// 1. PR 알림 받음
+// "⚠️ [BREAKING] API 변경사항 동기화" PR 생성됨
+
+// 2. PR 체크아웃
+git checkout api-sync-123
+
+// 3. 빌드 시도
+npm run build
+
+// ❌ 컴파일 에러 발생!
+// src/components/CompetitorCard.tsx:15:7 - error TS2322:
+// Type 'string' is not assignable to type 'number'.
+// 15   const gpa: number = data.gpa;
+//           ~~~
+
+// 4. Changelog 확인
+cat public/CHANGELOG.md
+// ⚠️ Type changed: response.gpa (number → string)
+
+// 5. 자동 생성된 타입 확인
+cat src/types/api.ts
+// gpa: string;  ← 이미 업데이트됨!
+
+// 6. 코드 수정
+// Before:
+const gpa: number = data.gpa;
+
+// After:
+const gpa = parseFloat(data.gpa);
+
+// 7. 다시 빌드
+npm run build  // ✅ 성공!
+
+// 8. 테스트
+npm run test  // ✅ 통과!
+
+// 9. 머지
+```
+
+### 자동 생성된 파일
+
+```
+frontend-repo/
+├── public/
+│   ├── openapi.json         ← 자동 생성
+│   └── CHANGELOG.md         ← 자동 생성
+├── src/
+│   └── types/
+│       └── api.ts           ← 자동 생성 (TypeScript 타입!)
+└── package.json
+```
+
+**모두 GitHub Actions가 자동으로 생성하고 PR에 포함됩니다!**
+
+---
+
+## 요약: 각 팀의 책임
+
+### 🔧 백엔드 팀
+```bash
+# 1. Bruno 저장소에서 .bru 파일 작성
+vim users/get-profile.bru
+
+# 2. docs 블록에 정확한 응답 예시 작성
+docs {
+  ```json
+  { "id": 1, "username": "john" }
+  ```
+}
+
+# 3. PR 생성 → 끝!
+```
+
+**설정 필요 없음!** 단지 Bruno docs만 정확히 작성
+
+### 🎨 프론트엔드 팀
+```bash
+# 1. 자동 생성된 PR 확인
+# 2. 타입 확인 (src/types/api.ts)
+# 3. Breaking 있으면 코드 수정
+# 4. 테스트 & 머지
+```
+
+**타입이 자동으로 업데이트!** TypeScript 컴파일러가 문제 찾아줌
+
+### 🤖 자동화 (GitHub Actions)
+- ✅ Bruno → OpenAPI 변환
+- ✅ OpenAPI → TypeScript 타입 생성
+- ✅ Breaking Changes 감지
+- ✅ PR 자동 생성
+- ✅ Changelog 생성
+
+---
+
 ## 참고 문서
 
 - [BRUNO-REPO-SETUP.md](./BRUNO-REPO-SETUP.md) - GitHub Actions 워크플로우 상세
 - [CROSS-REPO-SYNC.md](./CROSS-REPO-SYNC.md) - Repository Dispatch 상세
 - [FRONTEND-SETUP.md](./FRONTEND-SETUP.md) - 프론트엔드 설정
+- [openapi-typescript 문서](https://github.com/drwpow/openapi-typescript) - 타입 생성 도구
+- [openapi-fetch 문서](https://github.com/drwpow/openapi-typescript/tree/main/packages/openapi-fetch) - 타입 안전 클라이언트
 
 ---
 
 **이제 3개의 독립된 저장소로 완벽하게 관리됩니다!** 🚀
+
+Bruno docs만 정확히 작성하면, 나머지는 모두 자동입니다!
