@@ -6,7 +6,7 @@ Bruno API 컬렉션을 OpenAPI 스펙으로 자동 변환하고, 버전 간 변�
 
 **[🚀 5분 빠른 시작](./QUICKSTART.md)** | **[영문 README](./README.md)**
 
-**개발자 가이드**: [🔧 백엔드](./docs/BACKEND-GUIDE.md) | [🎨 프론트엔드](./docs/FRONTEND-GUIDE.md) | [⚙️ 프론트엔드 설정](./docs/FRONTEND-SETUP.md) | [📝 Bruno 파일 작성](./docs/BRUNO-GUIDE.md) | [🤝 팀 워크플로우](./docs/WORKFLOW.md)
+**개발자 가이드**: [📝 Bruno 파일 작성](./docs/BRUNO-GUIDE.md) | [🎨 프론트엔드](./docs/FRONTEND-GUIDE.md) | [⚙️ GitHub Actions 설정](./docs/GITHUB-ACTIONS-SETUP.md)
 
 ## ✨ 주요 기능
 
@@ -466,48 +466,32 @@ open docs/changelog.html
 
 ### 역할별 가이드
 
-#### 🔧 백엔드 개발자
-- **[백엔드 개발자 가이드](./docs/BACKEND-GUIDE.md)** 🆕
-  - API 개발부터 Bruno 파일 작성까지 전체 워크플로우
-  - 로컬 테스트 및 PR 생성 방법
-  - Breaking Changes 가이드
-  - 체크리스트 및 템플릿
-
-- **[Bruno 파일 작성 가이드](./docs/BRUNO-GUIDE.md)** (상세 참고)
+#### 📝 Bruno 파일 작성 (백엔드 개발자용)
+- **[Bruno 파일 작성 가이드](./docs/BRUNO-GUIDE.md)**
   - Bruno 파일 기본 구조
-  - 필수 작성 규칙
+  - 필수 작성 규칙 (docs 블록 중심)
   - 실전 예시와 템플릿
+  - 도메인별 폴더 구조
+  - 체크리스트 및 빠른 템플릿
 
 #### 🎨 프론트엔드 개발자
-- **[프론트엔드 설정 가이드](./docs/FRONTEND-SETUP.md)** 🆕
-  - Bruno 폴더만 클론하기 (Git sparse checkout)
-  - 전역 명령어 설정
-  - 프론트엔드 프로젝트 통합
-  - 자동화 스크립트
-
-- **[프론트엔드 개발자 가이드](./docs/FRONTEND-GUIDE.md)**
-  - API 변경사항 확인하는 3가지 방법
-  - Swagger UI 사용법
+- **[프론트엔드 개발자 완전 가이드](./docs/FRONTEND-GUIDE.md)**
+  - 초기 설정 (GitHub Actions)
+  - TypeScript 타입 자동 생성
+  - API 변경사항 확인 방법
+  - 타입 사용 방법 (openapi-fetch, React Query)
   - Breaking Changes 대응
-  - 5분 워크플로우
-
-#### 🤝 전체 팀
-- **[팀 워크플로우 가이드](./docs/WORKFLOW.md)**
-  - 백엔드-프론트엔드 협업 프로세스
-  - CI/CD 자동화
+  - 일상적인 워크플로우
   - FAQ
 
-#### 🌐 저장소 관리
-- **[Bruno 별도 저장소 완전 가이드](./docs/BRUNO-SEPARATE-REPO.md)** 🆕
-  - 3개의 독립 저장소 구조 (Bruno/Backend/Frontend)
-  - 전체 자동화 설정 (GitHub Actions)
-  - 백엔드/프론트엔드 워크플로우
-  - Repository Dispatch 설정
+#### ⚙️ GitHub Actions 설정
+- **[GitHub Actions 적용 가이드](./docs/GITHUB-ACTIONS-SETUP.md)**
+  - Bruno 독립 저장소 설정
+  - 프론트엔드 자동 연동 설정
+  - Secret 설정
+  - 테스트 및 문제 해결
 
-- **[저장소 간 동기화 가이드](./docs/CROSS-REPO-SYNC.md)**
-  - Repository Dispatch, Git Submodule, NPM Package
-
-#### 🚀 기타
+#### 🚀 빠른 시작
 - **[5분 빠른 시작 가이드](./QUICKSTART.md)**
 - **[영문 README](./README.md)** - English version
 

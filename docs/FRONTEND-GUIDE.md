@@ -1,539 +1,668 @@
-# 프론트엔드 개발자 가이드
+# 프론트엔드 개발자 완전 가이드
 
-> **백엔드 API 변경사항을 확인하고 안전하게 대응하기**
+> **Bruno 독립 저장소에서 TypeScript 타입 자동 생성 및 API 변경사항 관리**
 
 ## 📋 목차
 
 1. [개요](#개요)
-2. [워크플로우](#워크플로우)
-3. [Step 1: PR 알림 확인](#step-1-pr-알림-확인)
-4. [Step 2: API 명세서 보기](#step-2-api-명세서-보기-swagger-ui)
-5. [Step 3: 변경사항 시각화 확인](#step-3-변경사항-시각화-확인)
-6. [Step 4: Bruno 파일 직접 확인](#step-4-bruno-파일-직접-확인-선택)
-7. [Step 5: 빠른 대응](#step-5-빠른-대응)
-8. [실전 시나리오](#실전-시나리오)
-9. [체크리스트](#체크리스트)
-10. [FAQ](#faq)
+2. [초기 설정](#초기-설정)
+3. [TypeScript 타입 자동 생성](#typescript-타입-자동-생성)
+4. [API 변경사항 확인](#api-변경사항-확인)
+5. [타입 사용 방법](#타입-사용-방법)
+6. [Breaking Changes 대응](#breaking-changes-대응)
+7. [일상적인 워크플로우](#일상적인-워크플로우)
+8. [FAQ](#faq)
 
 ---
 
 ## 개요
 
-### 🎯 이 가이드의 목표
+### 🎯 목표
 
-백엔드가 API를 수정했을 때:
-- ❓ "뭐가 바뀐거지?"
-- ❓ "Breaking change가 있나?"
-- ❓ "어떻게 대응해야 하지?"
+프론트엔드 개발자는:
+- ✅ **Bruno 저장소**에서 API 명세 자동 수신
+- ✅ **TypeScript 타입** 자동 생성
+- ✅ **Breaking Changes** 자동 감지
+- ✅ **안전한 마이그레이션** 가이드 제공
+- ✅ **컴파일러**가 에러 자동 감지
 
-이 가이드로 **5분 안에 모든 변경사항을 파악**하고 안전하게 대응할 수 있습니다!
-
-> **💡 첫 설정이 필요한가요?** [프론트엔드 설정 가이드](./FRONTEND-SETUP.md)를 먼저 확인하세요.
-> Bruno 폴더만 받아서 독립적으로 사용하는 방법을 안내합니다.
-
-### 변경사항 확인 방법
-
-| 방법 | 소요 시간 | 용도 |
-|------|----------|------|
-| 📱 **PR 코멘트** | 30초 | 변경사항 요약 |
-| 🌐 **Swagger UI** | 2분 | 전체 API 구조 확인 |
-| 📊 **Changelog HTML** | 3분 | 상세 변경사항 및 마이그레이션 가이드 |
-| 📝 **Bruno 파일** | 5분 | 실제 코드 확인 |
-
----
-
-## 워크플로우
+### 🔄 전체 흐름
 
 ```
-1. 백엔드가 API 수정 & PR 생성
+1️⃣ 백엔드: Bruno 독립 저장소에 .bru 파일 작성
    ↓
-2. CI/CD 자동 실행
-   - OpenAPI 생성
-   - 변경사항 감지
-   - PR에 자동 코멘트
+   bruno-api/
+   └── users/
+       └── get-profile.bru (docs 블록 포함)
    ↓
-3. PR 코멘트 확인 (30초)
-   - Breaking 있나?
-   - 무엇이 변경되었나?
+2️⃣ GitHub Actions 자동 실행 (Bruno 저장소)
    ↓
-4. Swagger UI 또는 Changelog 확인 (2분)
-   - 새 API 스키마
-   - 마이그레이션 가이드
+   ✅ OpenAPI 생성
+   ✅ Swagger UI 배포 (GitHub Pages)
+   ✅ 프론트엔드 저장소에 알림
    ↓
-5. 코드 수정 (필요시, 2~5분)
+3️⃣ GitHub Actions 자동 실행 (프론트엔드 저장소)
    ↓
-6. 테스트 & 빌드 (1분)
+   ✅ Bruno 저장소에서 OpenAPI 가져오기
+   ✅ TypeScript 타입 생성 (src/types/api.ts)
+   ✅ PR 자동 생성 (Breaking Changes 표시)
    ↓
-완료! 🎉
+4️⃣ 프론트엔드 개발자: PR 확인 및 코드 수정
+   ↓
+   ✅ Changelog 확인
+   ✅ TypeScript 컴파일러가 에러 표시
+   ✅ 코드 수정
+   ✅ 테스트 & 머지
 ```
 
 **총 소요 시간**: 5~10분
 
 ---
 
-## Step 1: PR 알림 확인
+## 초기 설정
 
-백엔드가 Bruno 파일을 수정하고 PR을 만들면, 자동으로 **PR 코멘트**가 달립니다.
+### Step 1: 프론트엔드 저장소에 GitHub Actions 설정
 
-### PR 코멘트 예시
+프론트엔드 저장소에 다음 워크플로우를 추가합니다:
 
-```markdown
-## 🔄 API 변경사항
+`.github/workflows/sync-bruno.yml` 생성:
 
-### ⚠️ **Breaking Changes 발견!**
-> 기존 코드를 깨뜨릴 수 있는 변경사항이 있습니다.
+```yaml
+name: Sync Bruno API
 
-### 📝 변경된 Bruno 파일
-bruno/applications/get-competitors.bru
+on:
+  repository_dispatch:
+    types: [bruno_updated]
+  workflow_dispatch:
 
-### 📊 상세 변경사항
+jobs:
+  sync:
+    runs-on: ubuntu-latest
 
-⚠️  BREAKING CHANGES:
-   GET    /applications/competitors
-      ~ response.firstChoice[].gpa (number → string)
-      - response.firstChoice[].applicants[].schoolId
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-✨ Added:
-   POST   /applications/submit
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
 
-### 🔗 유용한 링크
-- 📖 [API 명세서 보기](https://your-team.github.io/api/api-viewer.html)
-- 🔄 [변경사항 시각화](https://your-team.github.io/api/changelog.html)
-- 📥 [OpenAPI 다운로드](https://your-team.github.io/api/openapi.json)
+      - name: Clone Bruno Repository
+        run: |
+          git clone https://github.com/YOUR-ORG/bruno-api.git /tmp/bruno-api
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Generate OpenAPI
+        run: |
+          npx bruno-openapi-sync generate \
+            -i /tmp/bruno-api \
+            -o ./public/openapi.json \
+            --diff \
+            --changelog ./public/CHANGELOG.md
+
+      - name: Generate TypeScript Types
+        run: |
+          mkdir -p src/types
+          npx openapi-typescript ./public/openapi.json -o ./src/types/api.ts
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git add public/ src/types/
+          if git diff --staged --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check breaking changes
+        if: steps.changes.outputs.has_changes == 'true'
+        id: breaking
+        run: |
+          if grep -q "Breaking Changes" public/CHANGELOG.md; then
+            echo "has_breaking=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_breaking=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: |
+            chore: sync API types from Bruno
+
+            - OpenAPI spec updated
+            - TypeScript types regenerated
+            ${{ steps.breaking.outputs.has_breaking == 'true' && '- ⚠️ Breaking changes detected' || '' }}
+          branch: api-sync-${{ github.run_number }}
+          delete-branch: true
+          title: "${{ steps.breaking.outputs.has_breaking == 'true' && '⚠️ [BREAKING] ' || '✨ ' }}API 타입 동기화"
+          body: |
+            ## 🔄 Bruno API 자동 동기화
+
+            ### 📝 변경된 파일
+            - `public/openapi.json` - OpenAPI 스펙
+            - `src/types/api.ts` - TypeScript 타입 ✨
+            - `public/CHANGELOG.md` - 변경사항 상세
+
+            ${{ steps.breaking.outputs.has_breaking == 'true' && '### ⚠️ Breaking Changes 있음!\n\nTypeScript 컴파일러가 자동으로 에러를 표시합니다.\n```bash\nnpm run build\n```\n' || '' }}
+
+            ### 📖 확인하기
+            - [Changelog](../blob/api-sync-${{ github.run_number }}/public/CHANGELOG.md)
+            - [OpenAPI Spec](../blob/api-sync-${{ github.run_number }}/public/openapi.json)
+
+            ### ✅ 체크리스트
+            - [ ] Changelog 확인
+            - [ ] 타입 확인 (`src/types/api.ts`)
+            - [ ] Breaking changes 대응
+            - [ ] 빌드 테스트 (`npm run build`)
+            - [ ] 단위 테스트 (`npm test`)
+          labels: |
+            api-sync
+            typescript
+            ${{ steps.breaking.outputs.has_breaking == 'true' && 'breaking-change' || 'enhancement' }}
 ```
 
-**여기서 즉시 파악할 것:**
-- ⚠️ Breaking이 있는지?
-- 📝 어떤 파일이 변경되었는지?
-- 📊 무엇이 바뀌었는지?
+⚠️ **중요**: `YOUR-ORG/bruno-api`를 실제 Bruno 저장소 URL로 변경하세요.
+
+자세한 GitHub Actions 설정은 [GITHUB-ACTIONS-SETUP.md](./GITHUB-ACTIONS-SETUP.md)를 참조하세요.
+
+### Step 2: package.json에 스크립트 추가
+
+```json
+{
+  "scripts": {
+    "types:generate": "openapi-typescript ./public/openapi.json -o ./src/types/api.ts",
+    "types:watch": "openapi-typescript ./public/openapi.json -o ./src/types/api.ts --watch",
+    "build": "npm run types:generate && vite build"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^6.0.0",
+    "openapi-fetch": "^0.8.0"
+  }
+}
+```
 
 ---
 
-## Step 2: API 명세서 보기 (Swagger UI)
+## TypeScript 타입 자동 생성
 
-### 방법 1: GitHub Pages에서 보기
+### 자동 생성 워크플로우
 
-PR 코멘트의 "📖 API 명세서 보기" 링크를 클릭하면:
+Bruno 저장소에서 API가 변경되면:
 
-```
-https://your-team.github.io/your-repo/api-viewer.html
-```
+1. ✅ Bruno 저장소에서 OpenAPI 자동 생성
+2. ✅ 프론트엔드 저장소로 알림 (Repository Dispatch)
+3. ✅ 프론트엔드 GitHub Actions 실행
+4. ✅ TypeScript 타입 자동 생성 (`src/types/api.ts`)
+5. ✅ PR 자동 생성
 
-**Swagger UI**가 열립니다!
+### 생성되는 타입 예시
 
-#### Swagger UI에서 할 수 있는 것
-
-1. **모든 API 엔드포인트 목록 확인**
-   - 도메인별로 그룹화
-   - HTTP 메서드 한눈에 보기
-
-2. **요청/응답 스키마 확인**
-   ```json
-   // 응답 예시
-   {
-     "firstChoice": [
-       {
-         "universityId": 1,
-         "koreanName": "데겐도르프대학",
-         "gpa": "4.5"  // ⚠️ string으로 변경됨!
-       }
-     ]
-   }
-   ```
-
-3. **타입 정보 확인**
-   - 각 필드의 타입 (string, number, array, object)
-   - 필수 여부 (required)
-   - 예시 값
-
-4. **직접 테스트 (선택)**
-   - "Try it out" 버튼으로 실제 API 호출 가능
-   - 응답 확인
-
-### 방법 2: 로컬에서 보기
-
-```bash
-# 프로젝트 클론
-git clone <repo-url>
-cd bruno-api-typescript
-
-# OpenAPI 생성
-npm install
-npm run api:generate
-
-# Swagger UI 열기
-# docs/api-viewer.html 파일을 브라우저에서 열기
-open docs/api-viewer.html
-```
-
----
-
-## 📊 Step 3: 변경사항 시각화 확인
-
-### HTML Changelog 보기
-
-PR 코멘트의 "🔄 변경사항 시각화" 링크 클릭:
-
-```
-https://your-team.github.io/your-repo/changelog.html
-```
-
-**시각적 대시보드**가 열립니다!
-
-#### 대시보드 구성
-
-1. **📊 요약 카드**
-   ```
-   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
-   │ ✨ Added    │  │ 🔄 Modified │  │ ⚠️ Breaking │
-   │     2       │  │      1      │  │      1      │
-   └─────────────┘  └─────────────┘  └─────────────┘
-   ```
-
-2. **⚠️ Breaking Changes 섹션**
-   - 빨간색으로 강조
-   - 어떤 필드가 바뀌었는지
-   - 타입 변경 (number → string)
-   - 필드 제거/추가
-
-3. **도메인별 변경사항**
-   - Applications
-   - Users
-   - ...
-
-### Markdown Changelog (텍스트 버전)
-
-Git Pull 후:
-
-```bash
-cat CHANGELOG.md
-```
-
-```markdown
-# API Changelog
-
-## ⚠️ Breaking Changes
-
-#### ⚠️ `GET /applications/competitors`
-
-**변경사항**:
-- 🔄 Type changed: `response.firstChoice[].gpa` from `number` to `string`
-- 🗑️ Removed: `response.firstChoice[].applicants[].schoolId`
-
-**마이그레이션 가이드**:
 ```typescript
-// Before
-const gpa: number = data.firstChoice[0].gpa;
-const schoolId = data.applicants[0].schoolId;
-
-// After
-const gpa: string = data.firstChoice[0].gpa; // ⚠️ 타입 변경!
-// schoolId는 더 이상 사용 불가
-```
+// src/types/api.ts (자동 생성됨)
+export interface paths {
+  "/users/profile": {
+    get: {
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              id: number;
+              username: string;
+              email: string;
+              createdAt: string;
+            };
+          };
+        };
+      };
+    };
+  };
+}
 ```
 
 ---
 
-## 🔍 Step 4: Bruno 파일 직접 확인 (선택)
+## API 변경사항 확인
 
-더 자세히 보고 싶다면 Bruno 파일을 직접 확인:
+### 방법 1: PR 자동 코멘트 확인 (가장 빠름, 30초)
 
-### GitHub에서 확인
+프론트엔드 저장소에 자동으로 PR이 생성되며, 다음 정보를 포함합니다:
 
-PR의 "Files changed" 탭에서:
+```markdown
+## 🔄 Bruno API 자동 동기화
 
-```diff
-# bruno/applications/get-competitors.bru
+### ⚠️ Breaking Changes 있음!
 
+TypeScript 컴파일러가 자동으로 에러를 표시합니다.
+
+### 📝 변경된 파일
+- `public/openapi.json` - OpenAPI 스펙
+- `src/types/api.ts` - TypeScript 타입 ✨
+- `public/CHANGELOG.md` - 변경사항 상세
+
+### 📖 확인하기
+- Changelog
+- OpenAPI Spec
+```
+
+### 방법 2: Swagger UI 확인 (2분)
+
+Bruno 저장소의 GitHub Pages에서 전체 API 구조 확인:
+
+```
+https://YOUR-ORG.github.io/bruno-api/
+```
+
+**Swagger UI에서 할 수 있는 것:**
+- 모든 API 엔드포인트 목록 확인
+- 요청/응답 스키마 확인
+- 타입 정보 확인 (string, number, array, object)
+- 필수 필드 확인
+- 직접 API 테스트 (Try it out)
+
+### 방법 3: Changelog 확인 (3분)
+
+```bash
+# PR 체크아웃
+git checkout api-sync-123
+
+# Changelog 확인
+cat public/CHANGELOG.md
+```
+
+**Changelog에 포함된 정보:**
+- 📊 요약 (Added/Modified/Removed 개수)
+- ⚠️ Breaking Changes 목록
+- 🔄 타입 변경 상세 (number → string 등)
+- 📝 마이그레이션 가이드
+
+---
+
+## 타입 사용 방법
+
+### 방법 1: openapi-fetch 사용 (권장)
+
+```bash
+npm install openapi-fetch
+```
+
+```typescript
+// src/api/client.ts
+import createClient from 'openapi-fetch';
+import type { paths } from '../types/api';
+
+export const client = createClient<paths>({
+  baseUrl: 'https://api.example.com',
+});
+
+// src/components/Profile.tsx
+import { client } from '../api/client';
+
+const Profile = () => {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    // ✅ 완벽한 타입 추론!
+    client.GET('/users/profile').then(({ data, error }) => {
+      if (error) {
+        console.error(error);
+        return;
+      }
+      setUser(data);
+      //   ^? { id: number; username: string; email: string; ... }
+    });
+  }, []);
+
+  return <div>{user?.username}</div>;
+};
+```
+
+### 방법 2: React Query + openapi-fetch
+
+```typescript
+// src/hooks/useUserProfile.ts
+import { useQuery } from '@tanstack/react-query';
+import { client } from '../api/client';
+
+export function useUserProfile() {
+  return useQuery({
+    queryKey: ['user', 'profile'],
+    queryFn: async () => {
+      const { data, error } = await client.GET('/users/profile');
+      if (error) throw error;
+      return data;
+      //     ^? { id: number; username: string; ... }
+    },
+  });
+}
+
+// src/components/Profile.tsx
+import { useUserProfile } from '../hooks/useUserProfile';
+
+const Profile = () => {
+  const { data: user, isLoading, error } = useUserProfile();
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error!</div>;
+
+  return (
+    <div>
+      {/* ✅ 완벽한 타입 안전성! */}
+      <h1>{user.username}</h1>
+      <p>{user.email}</p>
+    </div>
+  );
+};
+```
+
+### 방법 3: 타입 헬퍼 사용
+
+```typescript
+// src/types/helpers.ts
+import type { paths } from './api';
+
+// 응답 타입 추출 헬퍼
+export type ApiResponse<
+  Path extends keyof paths,
+  Method extends keyof paths[Path]
+> = paths[Path][Method] extends { responses: { 200: { content: { 'application/json': infer T } } } }
+  ? T
+  : never;
+
+// 사용
+export type UserProfile = ApiResponse<'/users/profile', 'get'>;
+//           ^? { id: number; username: string; email: string; ... }
+
+// src/components/Profile.tsx
+import type { UserProfile } from '../types/helpers';
+
+const Profile = () => {
+  const [user, setUser] = useState<UserProfile | null>(null);
+  return <div>{user?.username}</div>;
+};
+```
+
+---
+
+## Breaking Changes 대응
+
+### TypeScript 컴파일러가 자동 감지
+
+#### 시나리오: 타입 변경
+
+**1. 백엔드가 Bruno 수정**
+
+```bru
+# bruno-api/users/get-profile.bru (수정 전)
 docs {
   ```json
   {
-    "firstChoice": [
-      {
--       "gpa": 4.5,
-+       "gpa": "4.5",
-        "applicants": [
-          {
-            "id": 1,
--           "schoolId": 123
-          }
-        ]
-      }
-    ]
+    "id": 1,
+    "age": 25
+  }
+  ```
+}
+
+# bruno-api/users/get-profile.bru (수정 후)
+docs {
+  ```json
+  {
+    "id": 1,
+    "age": "25"  ← number → string
   }
   ```
 }
 ```
 
-**한눈에 보이는 것:**
-- `-` 빨간색: 제거된 것
-- `+` 초록색: 추가된 것
+**2. 프론트엔드 PR 자동 생성**
+
+```
+⚠️ [BREAKING] API 타입 동기화
+```
+
+**3. 빌드 시도**
+
+```bash
+git checkout api-sync-123
+npm run build
+```
+
+**4. TypeScript 컴파일 에러 발생**
+
+```
+❌ src/components/Profile.tsx:15:7 - error TS2322:
+Type 'string' is not assignable to type 'number'.
+
+15   const age: number = user.age;
+           ~~~
+
+src/types/api.ts:42:7
+  42     age: string;
+           ~~~
+```
+
+**5. Changelog 확인**
+
+```bash
+cat public/CHANGELOG.md
+```
+
+```markdown
+## ⚠️ Breaking Changes
+
+### `GET /users/profile`
+
+**변경사항**:
+- 🔄 Type changed: `response.age` from `number` to `string`
+
+**마이그레이션 가이드**:
+```typescript
+// Before
+const age: number = user.age;
+const nextYear = age + 1;
+
+// After
+const age: string = user.age;
+const nextYear = parseInt(age) + 1;
+```
+```
+
+**6. 코드 수정**
+
+```typescript
+// ❌ Before
+const age: number = user.age;  // 컴파일 에러!
+const canDrink = age >= 21;
+
+// ✅ After
+const age = parseInt(user.age);  // 타입 변환
+const canDrink = age >= 21;
+```
+
+**7. 테스트 & 머지**
+
+```bash
+npm run build  # ✅ 성공!
+npm run test   # ✅ 통과!
+
+git add .
+git commit -m "fix: handle age as string"
+git push
+```
 
 ---
 
-## ⚡ Step 5: 빠른 대응
+## 일상적인 워크플로우
 
 ### Breaking이 없는 경우
 
 ```bash
-git pull
-npm run dev
-```
+# 1. PR 확인
+# GitHub에서 "✨ API 타입 동기화" PR 확인
 
-끝! TypeScript가 자동으로 새 타입을 인식합니다.
+# 2. 체크아웃
+git checkout api-sync-123
+
+# 3. 빌드 확인
+npm run build  # ✅ 에러 없음
+
+# 4. 머지
+# GitHub에서 PR 승인 & 머지
+
+# 끝! (총 1분)
+```
 
 ### Breaking이 있는 경우
 
-#### 1. 영향 범위 파악
-
 ```bash
-# 변경된 필드를 사용하는 곳 찾기
-grep -r "\.gpa" src/
-```
+# 1. PR 확인
+# GitHub에서 "⚠️ [BREAKING] API 타입 동기화" PR 확인
 
-출력:
-```
-src/components/CompetitorCard.tsx:15:  const gpaDisplay = data.gpa.toFixed(2);
-src/pages/Applications.tsx:42:  return data.gpa > 4.0;
-```
+# 2. 체크아웃
+git checkout api-sync-123
 
-#### 2. 코드 수정
+# 3. Changelog 확인 (2분)
+cat public/CHANGELOG.md
 
-**src/components/CompetitorCard.tsx**
-```typescript
-// ❌ Before
-const gpaDisplay = data.gpa.toFixed(2);
-
-// ✅ After
-const gpaDisplay = parseFloat(data.gpa).toFixed(2);
-```
-
-**src/pages/Applications.tsx**
-```typescript
-// ❌ Before
-return data.gpa > 4.0;
-
-// ✅ After
-return parseFloat(data.gpa) > 4.0;
-```
-
-#### 3. 컴파일 확인
-
-```bash
+# 4. 빌드 시도 (컴파일 에러 확인)
 npm run build
-```
 
-에러가 없으면 OK!
+# 5. 영향 범위 파악 (1분)
+grep -r "\.age" src/  # 변경된 필드 검색
 
-#### 4. 테스트
+# 6. 코드 수정 (3분)
+# TypeScript 에러 메시지 따라 수정
 
-```bash
+# 7. 테스트 (1분)
+npm run build
 npm run test
+
+# 8. 커밋 & 푸시
+git add .
+git commit -m "fix: handle age as string"
+git push
+
+# 9. 머지
+# GitHub에서 PR 승인 & 머지
+
+# 끝! (총 8분)
 ```
 
 ---
 
-## 📱 실전 시나리오
+## FAQ
 
-### 시나리오 1: 새 API 추가 (Breaking 없음)
+### Q1: 타입 파일은 커밋해야 하나요?
 
-**PR 코멘트:**
-```
-✨ Added:
-   POST /applications/submit
-```
+**A**: 두 가지 옵션:
 
-**대응:**
+**옵션 1: 커밋 안 함**
+- `.gitignore`에 `src/types/api.ts` 추가
+- 장점: Git diff가 깔끔함
+- 단점: 로컬에서 `npm run types:generate` 필요
+
+**옵션 2: 커밋함 (권장)**
+- Git에 포함
+- 장점: clone 후 바로 사용 가능, PR에서 타입 변경 확인 가능
+- 단점: PR에 타입 변경 diff가 많이 보임
+
+### Q2: 로컬에서 타입을 즉시 생성하려면?
+
+**A**:
+
 ```bash
-git pull
-# 끝! 필요하면 새 API 사용 시작
+# 1. Bruno 저장소 클론
+git clone https://github.com/YOUR-ORG/bruno-api.git /tmp/bruno-api
+
+# 2. OpenAPI 생성
+npx bruno-openapi-sync generate \
+  -i /tmp/bruno-api \
+  -o ./public/openapi.json
+
+# 3. TypeScript 타입 생성
+npx openapi-typescript ./public/openapi.json \
+  -o ./src/types/api.ts
+
+# 즉시 사용 가능!
 ```
 
-### 시나리오 2: 필드 타입 변경 (Breaking!)
+또는 watch 모드:
 
-**PR 코멘트:**
-```
-⚠️  BREAKING CHANGES:
-   GET /applications/competitors
-      ~ response.gpa (number → string)
-```
-
-**대응:**
-1. Swagger UI에서 새 스키마 확인
-2. Changelog에서 마이그레이션 가이드 확인
-3. 코드에서 `gpa` 사용하는 곳 찾기
-4. 타입 수정 (`number` → `string`)
-5. 테스트
-
-### 시나리오 3: 필드 제거 (Breaking!)
-
-**PR 코멘트:**
-```
-⚠️  BREAKING CHANGES:
-   GET /applications/competitors
-      - response.applicants[].schoolId
-```
-
-**대응:**
-1. `schoolId` 사용하는 곳 찾기
-2. 대안 찾기 (백엔드에게 문의 or 다른 필드 사용)
-3. 코드 수정
-4. 테스트
-
----
-
-## 🔗 유용한 링크 모음
-
-### 📖 문서
-
-- **API 명세서 (Swagger UI)**
-  ```
-  https://your-team.github.io/your-repo/api-viewer.html
-  ```
-  → 모든 API 엔드포인트와 스키마 확인
-
-- **변경사항 시각화**
-  ```
-  https://your-team.github.io/your-repo/changelog.html
-  ```
-  → 시각적 대시보드로 변경사항 확인
-
-- **OpenAPI 다운로드**
-  ```
-  https://your-team.github.io/your-repo/openapi.json
-  ```
-  → OpenAPI 스펙 파일 다운로드
-
-### 🛠️ 도구
-
-- **Bruno 앱** (선택)
-  ```
-  https://www.usebruno.com/downloads
-  ```
-  → Bruno 파일을 GUI로 보고 싶다면
-
-- **Swagger Editor** (선택)
-  ```
-  https://editor.swagger.io/
-  ```
-  → OpenAPI 파일을 편집하고 싶다면
-
----
-
-## ❓ FAQ
-
-### Q1: PR 코멘트가 안 달려요
-
-**A**:
-1. GitHub Actions가 활성화되어 있는지 확인
-2. `.github/workflows/api-review.yml` 파일이 있는지 확인
-3. Actions 탭에서 에러 확인
-
-### Q2: Swagger UI가 안 열려요
-
-**A**:
-1. GitHub Pages가 활성화되어 있는지 확인 (Settings → Pages)
-2. main 브랜치에 머지되었는지 확인 (PR에서는 안됨)
-3. URL이 맞는지 확인
-
-### Q3: Breaking이 있는데 어떻게 대응해야 할지 모르겠어요
-
-**A**:
-1. Changelog의 "마이그레이션 가이드" 섹션 확인
-2. 백엔드 개발자에게 문의
-3. 팀 슬랙/디스코드에 질문
-
-### Q4: 로컬에서 Swagger UI를 보고 싶어요
-
-**A**:
 ```bash
-npm run api:generate
-open docs/api-viewer.html
+npm run types:watch
+# 파일 변경 감지하여 자동 재생성
 ```
 
-### Q5: 이전 버전 API 명세를 보고 싶어요
+### Q3: OpenAPI에 없는 필드가 필요하면?
 
-**A**:
-```bash
-# 이전 버전 체크아웃
-git checkout main
-npm run api:generate
+**A**: 백엔드 팀에게 Bruno docs 업데이트 요청:
 
-# Swagger UI 열기
-open docs/api-viewer.html
+```bru
+# bruno-api/users/get-profile.bru
 
-# 다시 현재 브랜치로
-git checkout your-branch
+docs {
+  ```json
+  {
+    "id": 1,
+    "username": "john",
+    "email": "john@example.com",
+    "newField": "value"  ← 추가 요청!
+  }
+  ```
+}
 ```
 
----
+그러면 자동으로:
+1. OpenAPI 업데이트
+2. TypeScript 타입 업데이트
+3. 프론트엔드 PR 생성
 
-## ✅ 체크리스트
+### Q4: Breaking Changes는 어떻게 감지되나요?
 
-새로운 PR이 올라왔을 때:
+**A**: 자동으로 감지됩니다:
 
-- [ ] PR 코멘트 확인
-- [ ] Breaking이 있는지 확인
-- [ ] Swagger UI에서 새 API 스키마 확인
-- [ ] Changelog에서 변경사항 상세 확인
-- [ ] Breaking이 있다면:
-  - [ ] 영향 범위 파악 (grep으로 검색)
-  - [ ] 마이그레이션 가이드 확인
-  - [ ] 코드 수정
-  - [ ] 테스트
-- [ ] Git pull
-- [ ] 빌드 확인 (`npm run build`)
-- [ ] 개발 시작!
+- ⚠️ 엔드포인트 제거
+- ⚠️ 필드 제거
+- ⚠️ 타입 변경 (number → string)
+- ⚠️ 필수 필드 추가
 
----
+TypeScript 컴파일러가 해당 부분을 에러로 표시합니다.
 
-## 🎉 정리
+### Q5: Swagger UI는 어디서 보나요?
 
-### 변경사항 확인하는 3가지 방법
-
-1. **📱 PR 코멘트** (가장 빠름)
-   - Breaking 있는지 즉시 파악
-   - 요약 정보
-
-2. **🌐 Swagger UI** (시각적)
-   - 전체 API 구조 확인
-   - 새 스키마 확인
-   - 실제 테스트 가능
-
-3. **📊 Changelog HTML** (상세)
-   - 변경사항 시각화
-   - Before/After 비교
-   - 마이그레이션 가이드
-
-### 5분 워크플로우
+**A**: Bruno 저장소의 GitHub Pages:
 
 ```
-1. PR 코멘트 확인 (30초)
-   ↓
-2. Breaking 있나?
-   ├─ 없음 → git pull → 끝! (30초)
-   └─ 있음 → 다음 단계
-        ↓
-3. Swagger UI 확인 (2분)
-   ↓
-4. 코드 수정 (2분)
-   ↓
-5. 테스트 (30초)
-   ↓
-완료! ✨
+https://YOUR-ORG.github.io/bruno-api/
 ```
 
-**이제 API 변경이 무섭지 않습니다!** 🚀
+여기서 모든 API 문서를 볼 수 있습니다.
+
+### Q6: CI/CD에서 자동화하려면?
+
+**A**: 이미 설정되어 있습니다!
+
+Bruno 저장소에서 API가 변경되면:
+1. ✅ 프론트엔드 PR 자동 생성
+2. ✅ TypeScript 타입 자동 생성
+3. ✅ Breaking Changes 자동 감지
+4. ✅ Changelog 자동 생성
+
+프론트엔드 개발자는 PR만 확인하고 머지하면 됩니다.
 
 ---
 
 ## 참고 문서
 
-- **[프론트엔드 설정 가이드](./FRONTEND-SETUP.md)**: Bruno 폴더만 받아서 독립적으로 사용하기 🆕
-- **[백엔드 개발자 가이드](./BACKEND-GUIDE.md)**: 백엔드 관점에서의 워크플로우
-- **[Bruno 파일 작성 가이드](./BRUNO-GUIDE.md)**: Bruno 파일 상세 문법
-- **[팀 워크플로우](./WORKFLOW.md)**: 전체 팀 협업 프로세스
-- **[빠른 시작](../QUICKSTART.md)**: 5분 안에 시작하기
+- **[GitHub Actions 설정 가이드](./GITHUB-ACTIONS-SETUP.md)**: 초기 설정 완전 가이드
+- **[Bruno 파일 작성 가이드](./BRUNO-GUIDE.md)**: 백엔드 개발자용 Bruno 작성법
+- **[빠른 시작 가이드](../QUICKSTART.md)**: 5분 안에 시작하기
 
 ---
 
@@ -541,12 +670,10 @@ git checkout your-branch
 
 이 가이드를 따르면:
 
-✅ **API 변경사항 빠르게 파악**
-✅ **Breaking 사전 감지**
+✅ **TypeScript 타입 자동 생성**
+✅ **Breaking Changes 자동 감지**
 ✅ **안전한 마이그레이션**
-✅ **타입 안전성 보장**
-✅ **협업 효율 극대화**
+✅ **컴파일러가 에러 자동 표시**
+✅ **5분 안에 대응 완료**
 
-**백엔드와의 협업이 이렇게 쉬워질 수 있습니다!** 🚀
-
-궁금한 점은 언제든 팀에게 물어보세요!
+**백엔드와의 협업이 이렇게 쉬워집니다!** 🚀
