@@ -23,6 +23,45 @@
 - ✅ **전역 명령어**로 간편하게 실행
 - ✅ 백엔드 코드 변경 없이 **자동 동기화**
 
+### 📊 두 가지 시나리오
+
+#### 시나리오 1: 백엔드 메인 저장소에서 Bruno 사용 (현재 프로젝트) ⭐
+
+```
+backend-repo/
+├── .github/workflows/     ✅ 이미 설정됨
+│   ├── api-review.yml     ✅ PR 자동 코멘트
+│   └── api-docs-deploy.yml ✅ GitHub Pages 배포
+├── bruno/
+├── src/
+└── package.json
+```
+
+**특징**:
+- ✅ PR 코멘트 **자동**
+- ✅ Swagger UI **자동 배포**
+- ✅ 프론트엔드는 **읽기 전용**
+- ❌ 프론트엔드가 Bruno 수정 불가
+
+**프론트엔드 설정**: 아무것도 안 해도 됨! 아래 방법 1 참조
+
+#### 시나리오 2: 별도 Bruno 저장소 사용
+
+```
+bruno-repo/               frontend-repo/
+├── .github/workflows/    ├── .github/workflows/
+│   ❌ 설정 필요!          │   └── sync-bruno.yml
+├── applications/         └── src/
+└── users/
+```
+
+**특징**:
+- ⚠️ Bruno 저장소에 **GitHub Actions 설정 필요**
+- ✅ 프론트엔드도 Bruno 수정 가능
+- ✅ 저장소 간 자동 동기화
+
+**설정 방법**: [BRUNO-REPO-SETUP.md](./BRUNO-REPO-SETUP.md) 참조
+
 ### 백엔드 vs 프론트엔드
 
 | 역할 | 저장소 구조 | 작업 방법 |
@@ -32,9 +71,12 @@
 
 ---
 
-## 방법 1: Git Sparse Checkout (권장)
+## 방법 1: Git Sparse Checkout (권장) - 시나리오 1용
 
 Git의 **sparse checkout** 기능을 사용하면 bruno 폴더만 클론할 수 있습니다.
+
+> **💡 주의**: 이 방법은 **백엔드 메인 저장소**에서 Bruno를 사용하는 경우입니다.
+> PR 코멘트는 메인 저장소의 PR에 달립니다.
 
 ### 1.1 초기 설정
 
@@ -97,9 +139,11 @@ bruno-sync generate --diff --changelog CHANGELOG.md
 
 ---
 
-## 방법 2: 별도 Bruno 저장소 사용
+## 방법 2: 별도 Bruno 저장소 사용 - 시나리오 2용
 
 백엔드가 **별도 Bruno 저장소**를 자동 동기화하는 경우 사용합니다.
+
+> **⚠️ 설정 필요**: 별도 Bruno 저장소를 만든 경우, [BRUNO-REPO-SETUP.md](./BRUNO-REPO-SETUP.md)를 참조하여 GitHub Actions를 설정해야 합니다.
 
 ### 2.1 Bruno 저장소 클론
 
@@ -502,6 +546,8 @@ npm run dev
 - **[프론트엔드 개발자 가이드](./FRONTEND-GUIDE.md)**: API 변경사항 대응
 - **[백엔드 개발자 가이드](./BACKEND-GUIDE.md)**: 백엔드 관점
 - **[팀 워크플로우](./WORKFLOW.md)**: 전체 협업 프로세스
+- **[BRUNO-REPO-SETUP.md](./BRUNO-REPO-SETUP.md)**: 별도 Bruno 저장소 설정 (시나리오 2)
+- **[CROSS-REPO-SYNC.md](./CROSS-REPO-SYNC.md)**: 저장소 간 동기화 상세
 
 ---
 
