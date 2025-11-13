@@ -4,7 +4,9 @@
 
 Convert your Bruno API collections to OpenAPI specifications with automatic change detection, TypeScript type generation, and comprehensive changelog generation.
 
-**[한국어 문서 (Korean)](./README.ko.md)** | **[Bruno 작성 가이드](./docs/BRUNO-GUIDE.md)** | **[팀 워크플로우](./docs/WORKFLOW.md)**
+**[한국어 문서 (Korean)](./README.ko.md)** | **[빠른 시작 (5분)](./QUICKSTART.md)**
+
+**개발자 가이드**: [🔧 백엔드](./docs/BACKEND-GUIDE.md) | [🎨 프론트엔드](./docs/FRONTEND-GUIDE.md) | [📝 Bruno 파일 작성](./docs/BRUNO-GUIDE.md) | [🤝 팀 워크플로우](./docs/WORKFLOW.md)
 
 ## ✨ Features
 
