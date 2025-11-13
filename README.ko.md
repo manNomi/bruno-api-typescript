@@ -497,7 +497,17 @@ open docs/changelog.html
   - CI/CD 자동화
   - FAQ
 
-#### 🌐 기타
+#### 🌐 저장소 관리
+- **[Bruno 별도 저장소 완전 가이드](./docs/BRUNO-SEPARATE-REPO.md)** 🆕
+  - 3개의 독립 저장소 구조 (Bruno/Backend/Frontend)
+  - 전체 자동화 설정 (GitHub Actions)
+  - 백엔드/프론트엔드 워크플로우
+  - Repository Dispatch 설정
+
+- **[저장소 간 동기화 가이드](./docs/CROSS-REPO-SYNC.md)**
+  - Repository Dispatch, Git Submodule, NPM Package
+
+#### 🚀 기타
 - **[5분 빠른 시작 가이드](./QUICKSTART.md)**
 - **[영문 README](./README.md)** - English version
 

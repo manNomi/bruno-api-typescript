@@ -60,7 +60,9 @@ bruno-repo/               frontend-repo/
 - ✅ 프론트엔드도 Bruno 수정 가능
 - ✅ 저장소 간 자동 동기화
 
-**설정 방법**: [BRUNO-REPO-SETUP.md](./BRUNO-REPO-SETUP.md) 참조
+**설정 방법**:
+- [BRUNO-SEPARATE-REPO.md](./BRUNO-SEPARATE-REPO.md) - 전체 가이드 (권장)
+- [BRUNO-REPO-SETUP.md](./BRUNO-REPO-SETUP.md) - GitHub Actions만
 
 ### 백엔드 vs 프론트엔드
 
@@ -546,7 +548,8 @@ npm run dev
 - **[프론트엔드 개발자 가이드](./FRONTEND-GUIDE.md)**: API 변경사항 대응
 - **[백엔드 개발자 가이드](./BACKEND-GUIDE.md)**: 백엔드 관점
 - **[팀 워크플로우](./WORKFLOW.md)**: 전체 협업 프로세스
-- **[BRUNO-REPO-SETUP.md](./BRUNO-REPO-SETUP.md)**: 별도 Bruno 저장소 설정 (시나리오 2)
+- **[BRUNO-SEPARATE-REPO.md](./BRUNO-SEPARATE-REPO.md)**: Bruno 별도 저장소 완전 가이드 (시나리오 2 전체)
+- **[BRUNO-REPO-SETUP.md](./BRUNO-REPO-SETUP.md)**: GitHub Actions 워크플로우만
 - **[CROSS-REPO-SYNC.md](./CROSS-REPO-SYNC.md)**: 저장소 간 동기화 상세
 
 ---
