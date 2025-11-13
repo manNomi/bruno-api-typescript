@@ -6,6 +6,8 @@ Bruno API 컬렉션을 OpenAPI 스펙으로 자동 변환하고, 버전 간 변�
 
 **[🚀 5분 빠른 시작](./QUICKSTART.md)** | **[영문 README](./README.md)**
 
+**개발자 가이드**: [🔧 백엔드](./docs/BACKEND-GUIDE.md) | [🎨 프론트엔드](./docs/FRONTEND-GUIDE.md) | [⚙️ 프론트엔드 설정](./docs/FRONTEND-SETUP.md) | [📝 Bruno 파일 작성](./docs/BRUNO-GUIDE.md) | [🤝 팀 워크플로우](./docs/WORKFLOW.md)
+
 ## ✨ 주요 기능
 
 - **🔄 Bruno → OpenAPI**: .bru 파일을 OpenAPI 3.0으로 자동 변환
@@ -462,23 +464,52 @@ open docs/changelog.html
 
 ## 📚 추가 문서
 
-- **[Bruno 파일 작성 가이드](./docs/BRUNO-GUIDE.md)** - 백엔드 개발자용
+### 역할별 가이드
+
+#### 🔧 백엔드 개발자
+- **[백엔드 개발자 가이드](./docs/BACKEND-GUIDE.md)** 🆕
+  - API 개발부터 Bruno 파일 작성까지 전체 워크플로우
+  - 로컬 테스트 및 PR 생성 방법
+  - Breaking Changes 가이드
+  - 체크리스트 및 템플릿
+
+- **[Bruno 파일 작성 가이드](./docs/BRUNO-GUIDE.md)** (상세 참고)
   - Bruno 파일 기본 구조
   - 필수 작성 규칙
   - 실전 예시와 템플릿
 
-- **[프론트엔드 가이드](./docs/FRONTEND-GUIDE.md)** - 프론트엔드 개발자용 🆕
+#### 🎨 프론트엔드 개발자
+- **[프론트엔드 설정 가이드](./docs/FRONTEND-SETUP.md)** 🆕
+  - Bruno 폴더만 클론하기 (Git sparse checkout)
+  - 전역 명령어 설정
+  - 프론트엔드 프로젝트 통합
+  - 자동화 스크립트
+
+- **[프론트엔드 개발자 가이드](./docs/FRONTEND-GUIDE.md)**
   - API 변경사항 확인하는 3가지 방법
   - Swagger UI 사용법
   - Breaking Changes 대응
   - 5분 워크플로우
 
-- **[팀 워크플로우 가이드](./docs/WORKFLOW.md)** - 전체 팀용
+#### 🤝 전체 팀
+- **[팀 워크플로우 가이드](./docs/WORKFLOW.md)**
   - 백엔드-프론트엔드 협업 프로세스
   - CI/CD 자동화
   - FAQ
 
-- [영문 README](./README.md) - English version
+#### 🌐 저장소 관리
+- **[Bruno 별도 저장소 완전 가이드](./docs/BRUNO-SEPARATE-REPO.md)** 🆕
+  - 3개의 독립 저장소 구조 (Bruno/Backend/Frontend)
+  - 전체 자동화 설정 (GitHub Actions)
+  - 백엔드/프론트엔드 워크플로우
+  - Repository Dispatch 설정
+
+- **[저장소 간 동기화 가이드](./docs/CROSS-REPO-SYNC.md)**
+  - Repository Dispatch, Git Submodule, NPM Package
+
+#### 🚀 기타
+- **[5분 빠른 시작 가이드](./QUICKSTART.md)**
+- **[영문 README](./README.md)** - English version
 
 ## 🎯 다음 단계 (Roadmap)
 
