@@ -123,7 +123,7 @@ git push
 bash scripts/setup-cross-repo.sh
 ```
 
-또는 자세한 방법: **[Cross-Repo 연동 가이드](./docs/CROSS-REPO-SYNC.md)**
+또는 자세한 방법: **[GitHub Actions 설정 가이드](./docs/GITHUB-ACTIONS-SETUP.md)**
 
 ### 작동 방식
 
@@ -201,9 +201,9 @@ npm run api:changelog
 
 ## 📚 더 자세한 문서
 
-- **[Bruno 작성 가이드](./docs/BRUNO-GUIDE.md)** - 백엔드용
-- **[프론트엔드 가이드](./docs/FRONTEND-GUIDE.md)** - 프론트용
-- **[전체 워크플로우](./docs/WORKFLOW.md)** - 팀 협업
+- **[Bruno 파일 작성 가이드](./docs/BRUNO-GUIDE.md)** - 백엔드용
+- **[프론트엔드 완전 가이드](./docs/FRONTEND-GUIDE.md)** - 프론트용
+- **[GitHub Actions 설정 가이드](./docs/GITHUB-ACTIONS-SETUP.md)** - 자동화 설정
 
 ---
 

@@ -1,32 +1,28 @@
 # GitHub Actions 적용 가이드
 
-> **Bruno 별도 저장소를 위한 GitHub Actions 완전 설정**
+> **Bruno 독립 저장소 + 프론트엔드 자동 연동 설정**
 
 ## 📋 목차
 
 1. [준비 사항](#준비-사항)
 2. [Bruno 저장소 설정](#bruno-저장소-설정)
 3. [프론트엔드 저장소 설정](#프론트엔드-저장소-설정)
-4. [백엔드 저장소 설정 (선택)](#백엔드-저장소-설정-선택)
-5. [Secret 설정](#secret-설정)
-6. [테스트](#테스트)
-7. [문제 해결](#문제-해결)
+4. [Secret 설정](#secret-설정)
+5. [테스트](#테스트)
+6. [문제 해결](#문제-해결)
 
 ---
 
 ## 준비 사항
 
-### 1. 저장소 3개 생성
+### 1. 저장소 2개 생성
 
 ```bash
-# 1. Bruno 저장소
+# 1. Bruno 독립 저장소
 https://github.com/YOUR-ORG/bruno-api
 
 # 2. 프론트엔드 저장소
 https://github.com/YOUR-ORG/frontend-repo
-
-# 3. 백엔드 저장소 (이미 있다면 skip)
-https://github.com/YOUR-ORG/backend-repo
 ```
 
 ### 2. Personal Access Token 생성
@@ -248,12 +244,12 @@ jobs:
         uses: actions/deploy-pages@v2
 ```
 
-#### 2-3. 다른 저장소에 알림
+#### 2-3. 프론트엔드에 알림
 
-`.github/workflows/notify-repos.yml` 생성:
+`.github/workflows/notify-frontend.yml` 생성:
 
 ```yaml
-name: Notify Other Repos
+name: Notify Frontend
 
 on:
   push:
@@ -266,7 +262,7 @@ jobs:
   notify-frontend:
     runs-on: ubuntu-latest
     steps:
-      - name: Notify Frontend Repo
+      - name: Notify Frontend Repository
         run: |
           curl -X POST \
             -H "Accept: application/vnd.github+json" \
@@ -280,27 +276,9 @@ jobs:
                 "pusher": "${{ github.event.pusher.name }}"
               }
             }'
-
-  notify-backend:
-    runs-on: ubuntu-latest
-    if: false  # 백엔드 알림이 필요하면 true로 변경
-    steps:
-      - name: Notify Backend Repo
-        run: |
-          curl -X POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.REPO_ACCESS_TOKEN }}" \
-            https://api.github.com/repos/${{ github.repository_owner }}/backend-repo/dispatches \
-            -d '{
-              "event_type": "bruno_updated",
-              "client_payload": {
-                "commit_sha": "${{ github.sha }}",
-                "commit_message": "${{ github.event.head_commit.message }}"
-              }
-            }'
 ```
 
-⚠️ **중요**: `frontend-repo`, `backend-repo`를 실제 저장소 이름으로 변경!
+⚠️ **중요**: `frontend-repo`를 실제 프론트엔드 저장소 이름으로 변경!
 
 ### Step 3: 파일 커밋
 
@@ -327,8 +305,6 @@ on:
   repository_dispatch:
     types: [bruno_updated]
   workflow_dispatch:  # 수동 실행 가능
-  schedule:
-    - cron: '0 9 * * 1'  # 매주 월요일 오전 9시 (선택)
 
 jobs:
   sync:
@@ -448,42 +424,6 @@ git push
 
 ---
 
-## 백엔드 저장소 설정 (선택)
-
-백엔드가 Bruno 업데이트 알림을 받으려면 (선택사항):
-
-`.github/workflows/bruno-notification.yml` 생성:
-
-```yaml
-name: Bruno Updated
-
-on:
-  repository_dispatch:
-    types: [bruno_updated]
-
-jobs:
-  notify:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Send Slack Notification (선택)
-        if: false  # Slack 사용 시 true로 변경
-        run: |
-          curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
-            -H 'Content-Type: application/json' \
-            -d '{
-              "text": "🔔 Bruno API 업데이트\nCommit: ${{ github.event.client_payload.commit_message }}"
-            }'
-
-      - name: Log notification
-        run: |
-          echo "Bruno API updated!"
-          echo "Commit: ${{ github.event.client_payload.commit_sha }}"
-          echo "Message: ${{ github.event.client_payload.commit_message }}"
-```
-
----
-
 ## Secret 설정
 
 ### Bruno 저장소
@@ -499,12 +439,6 @@ jobs:
 ### 프론트엔드 저장소
 
 **Secret 추가 불필요!** `GITHUB_TOKEN`이 자동으로 제공됨
-
-### 백엔드 저장소 (Slack 사용 시)
-
-| Name | Value |
-|------|-------|
-| `SLACK_WEBHOOK` | Slack Webhook URL (선택) |
 
 ---
 
@@ -647,7 +581,7 @@ npx openapi-typescript ./public/openapi.json -o ./src/types/api.ts
 
 **확인사항**:
 ```bash
-# notify-repos.yml 확인
+# notify-frontend.yml 확인
 # 저장소 이름이 정확한지 확인
 # YOUR-ORG/frontend-repo → 실제 이름으로 변경했는지
 ```
@@ -669,7 +603,7 @@ curl -X POST \
 ### Bruno 저장소
 - [ ] `.github/workflows/api-review.yml` 생성
 - [ ] `.github/workflows/api-docs-deploy.yml` 생성
-- [ ] `.github/workflows/notify-repos.yml` 생성
+- [ ] `.github/workflows/notify-frontend.yml` 생성
 - [ ] 저장소 이름 수정 (`frontend-repo` → 실제 이름)
 - [ ] Secret 추가 (`REPO_ACCESS_TOKEN`)
 - [ ] GitHub Pages 활성화
@@ -680,10 +614,6 @@ curl -X POST \
 - [ ] 저장소 이름 수정 (`bruno-api` → 실제 이름)
 - [ ] `package.json`에 스크립트 추가
 - [ ] 수동 워크플로우 실행하여 테스트
-
-### 백엔드 저장소 (선택)
-- [ ] `.github/workflows/bruno-notification.yml` 생성
-- [ ] Slack Webhook 설정 (선택)
 
 ---
 
@@ -705,8 +635,8 @@ curl -X POST \
 
 ## 참고 문서
 
-- [BRUNO-SEPARATE-REPO.md](./BRUNO-SEPARATE-REPO.md) - 전체 가이드
-- [FRONTEND-TYPE-GENERATION.md](./FRONTEND-TYPE-GENERATION.md) - 타입 생성
+- [FRONTEND-GUIDE.md](./FRONTEND-GUIDE.md) - 프론트엔드 개발자 완전 가이드
+- [BRUNO-GUIDE.md](./BRUNO-GUIDE.md) - Bruno 파일 작성 가이드
 - [GitHub Actions 문서](https://docs.github.com/en/actions)
 - [peter-evans/create-pull-request](https://github.com/peter-evans/create-pull-request)
 
