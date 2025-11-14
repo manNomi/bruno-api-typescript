@@ -90,14 +90,15 @@ function generateUseQueryHook(
   const allParams = [...hookParams, ...optionalParams];
   const paramsStr = allParams.length > 0 ? allParams.join(', ') : '';
 
-  // queryKey 생성
+  // queryKey 생성 - request의 모든 값 포함 (URL params + query params)
   const queryKeyDomain = toCamelCase(domain);
   const queryKeyEndpoint = toCamelCase(apiFunc.name);
   let queryKeyStr = `[QueryKeys.${queryKeyDomain}.${queryKeyEndpoint}`;
   if (urlParams.length > 0) {
     queryKeyStr += `, ${urlParams.join(', ')}`;
   }
-  queryKeyStr += `]`;
+  // query params도 queryKey에 포함
+  queryKeyStr += `, params]`;
 
   // 훅 생성
   lines.push(`const ${hookName} = (${paramsStr}) => {`);
@@ -265,14 +266,15 @@ export function generateUseInfiniteQueryHook(
   const allParams = [...hookParams, 'size?: number'];
   const paramsStr = allParams.length > 0 ? allParams.join(', ') : '';
 
-  // queryKey
+  // queryKey - request의 모든 값 포함 (URL params + query params)
   const queryKeyDomain = toCamelCase(domain);
   const queryKeyEndpoint = toCamelCase(apiFunc.name);
   let queryKeyStr = `[QueryKeys.${queryKeyDomain}.${queryKeyEndpoint}`;
   if (urlParams.length > 0) {
     queryKeyStr += `, ${urlParams.join(', ')}`;
   }
-  queryKeyStr += `]`;
+  // size는 pagination params이므로 queryKey에 포함
+  queryKeyStr += `, size]`;
 
   // 훅 생성
   lines.push(`const ${hookName} = (${paramsStr}) => {`);
