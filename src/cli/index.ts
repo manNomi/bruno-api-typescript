@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * bruno-openapi-sync CLI
- * Bruno 파일을 OpenAPI로 변환하고 변경사항 추적
+ * bruno-api-typescript CLI
+ * Generate TypeScript API clients, React Query hooks, and OpenAPI specs from Bruno files
  */
 
 import { Command } from 'commander';
@@ -16,9 +16,9 @@ import { generateHooks } from '../generator/index';
 const program = new Command();
 
 program
-  .name('bruno-sync')
-  .description('Bruno to OpenAPI converter with change tracking')
-  .version('0.2.0');
+  .name('bruno-api')
+  .description('Generate TypeScript API clients, React Query hooks, and OpenAPI specs from Bruno files')
+  .version('0.3.0');
 
 program
   .command('generate')

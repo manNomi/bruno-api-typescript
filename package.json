@@ -1,11 +1,11 @@
 {
-  "name": "bruno-openapi-sync",
-  "version": "0.2.0",
-  "description": "Bruno .bru files to OpenAPI with TypeScript types, API client, MSW mocks, and change tracking",
+  "name": "bruno-api-typescript",
+  "version": "0.3.0",
+  "description": "Generate TypeScript API clients, React Query hooks, and OpenAPI specs from Bruno .bru files",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "bruno-sync": "./dist/cli/index.js"
+    "bruno-api": "./dist/cli/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -18,11 +18,13 @@
     "openapi",
     "typescript",
     "api",
-    "msw",
-    "mocks",
+    "react-query",
+    "hooks",
+    "axios",
     "codegen",
-    "swagger",
-    "rest-api"
+    "api-client",
+    "rest-api",
+    "tanstack-query"
   ],
   "author": "MANWOOK",
   "license": "MIT",

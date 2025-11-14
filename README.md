@@ -1,8 +1,8 @@
-# bruno-openapi-sync
+# bruno-api-typescript
 
-> **Bruno .bru files → OpenAPI 3.0 with automatic change tracking**
+> **Generate TypeScript API clients, React Query hooks, and OpenAPI specs from Bruno .bru files**
 
-Convert your Bruno API collections to OpenAPI specifications with automatic change detection, TypeScript type generation, and comprehensive changelog generation.
+Convert your Bruno API collections to type-safe TypeScript code with React Query hooks, Axios clients, and OpenAPI specifications. Includes automatic change detection and changelog generation.
 
 **[한국어 문서 (Korean)](./README.ko.md)** | **[빠른 시작 (5분)](./QUICKSTART.md)** | **[⚙️ 완전 설정 가이드](./SETUP-GUIDE.md)**
 
@@ -23,7 +23,7 @@ Convert your Bruno API collections to OpenAPI specifications with automatic chan
 ## 📦 Installation
 
 ```bash
-npm install -D bruno-openapi-sync
+npm install -D bruno-api-typescript
 ```
 
 ## 🚀 Quick Start
@@ -32,16 +32,16 @@ npm install -D bruno-openapi-sync
 
 ```bash
 # Generate OpenAPI spec
-npx bruno-sync generate -i ./bruno -o ./openapi.json
+npx bruno-api generate -i ./bruno -o ./openapi.json
 
 # Generate with change detection
-npx bruno-sync generate --diff
+npx bruno-api generate --diff
 
 # Generate changelog
-npx bruno-sync generate --diff --changelog CHANGELOG.md
+npx bruno-api generate --diff --changelog CHANGELOG.md
 
 # Generate React Query hooks
-npx bruno-sync generate-hooks -i ./bruno -o ./src/apis
+npx bruno-api generate-hooks -i ./bruno -o ./src/apis
 ```
 
 ### package.json Scripts
@@ -49,11 +49,11 @@ npx bruno-sync generate-hooks -i ./bruno -o ./src/apis
 ```json
 {
   "scripts": {
-    "api:generate": "bruno-sync generate -i ./bruno -o ./openapi.json",
-    "api:diff": "bruno-sync generate --diff",
-    "api:changelog": "bruno-sync generate --diff --changelog CHANGELOG.md",
-    "api:changelog:html": "bruno-sync generate --diff --changelog docs/changelog.html --changelog-format html",
-    "api:hooks": "bruno-sync generate-hooks -i ./bruno -o ./src/apis"
+    "api:generate": "bruno-api generate -i ./bruno -o ./openapi.json",
+    "api:diff": "bruno-api generate --diff",
+    "api:changelog": "bruno-api generate --diff --changelog CHANGELOG.md",
+    "api:changelog:html": "bruno-api generate --diff --changelog docs/changelog.html --changelog-format html",
+    "api:hooks": "bruno-api generate-hooks -i ./bruno -o ./src/apis"
   }
 }
 ```
@@ -65,7 +65,7 @@ npx bruno-sync generate-hooks -i ./bruno -o ./src/apis
 Generate type-safe React Query hooks from your Bruno collection:
 
 ```bash
-npx bruno-sync generate-hooks -i ./bruno -o ./src/apis
+npx bruno-api generate-hooks -i ./bruno -o ./src/apis
 ```
 
 **Options:**
@@ -178,7 +178,7 @@ function ApplicationForm() {
 ### CLI Options
 
 ```
-bruno-sync generate [options]
+bruno-api generate [options]
 
 Options:
   -i, --input <path>              Bruno collection directory (default: "./bruno")
@@ -200,7 +200,7 @@ Change Tracking:
 #### 1. Basic OpenAPI Generation
 
 ```bash
-npx bruno-sync generate \
+npx bruno-api generate \
   --input ./bruno \
   --output ./openapi.json \
   --title "My API" \
@@ -211,7 +211,7 @@ npx bruno-sync generate \
 #### 2. Change Detection
 
 ```bash
-npx bruno-sync generate --diff
+npx bruno-api generate --diff
 ```
 
 **Output:**
@@ -239,7 +239,7 @@ npx bruno-sync generate --diff
 #### 3. Generate Markdown Changelog
 
 ```bash
-npx bruno-sync generate --diff --changelog CHANGELOG.md
+npx bruno-api generate --diff --changelog CHANGELOG.md
 ```
 
 **Result: CHANGELOG.md**
@@ -282,7 +282,7 @@ const gpa: string = data.firstChoice[0].gpa; // ⚠️ Type changed!
 #### 4. HTML Changelog with Dashboard
 
 ```bash
-npx bruno-sync generate --diff --changelog docs/changelog.html --changelog-format html
+npx bruno-api generate --diff --changelog docs/changelog.html --changelog-format html
 ```
 
 Creates a beautiful HTML dashboard with:
@@ -294,7 +294,7 @@ Creates a beautiful HTML dashboard with:
 #### 5. Breaking Changes Only
 
 ```bash
-npx bruno-sync generate --diff --breaking-only --changelog BREAKING.md
+npx bruno-api generate --diff --breaking-only --changelog BREAKING.md
 ```
 
 ## 🏗️ Project Structure
@@ -523,9 +523,9 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## 📞 Support
 
 - 📧 Email: support@example.com
-- 🐛 Issues: [GitHub Issues](https://github.com/your-org/bruno-openapi-sync/issues)
+- 🐛 Issues: [GitHub Issues](https://github.com/manNomi/bruno-api-typescript/issues)
 - 📖 Docs: [Full Documentation](https://docs.example.com)
 
 ---
 
-**bruno-openapi-sync v0.2.0** - Built with ❤️ for better API workflows
+**bruno-api-typescript v0.3.0** - Built with ❤️ for better API workflows
