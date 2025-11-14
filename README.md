@@ -16,6 +16,9 @@ Convert your Bruno API collections to OpenAPI specifications with automatic chan
 - **📝 Changelog Generation**: Create beautiful changelogs in Markdown, JSON, or HTML
 - **🎯 Domain Grouping**: Organize endpoints by domain/folder structure
 - **🔍 Deep Schema Analysis**: Track field-level changes including type changes, additions, and removals
+- **🎣 React Query Hooks**: Generate type-safe React Query hooks with axios from .bru files
+- **📦 Query Keys**: Auto-generate organized query keys based on folder structure
+- **🔧 TypeScript Types**: Infer TypeScript types from JSON response examples
 
 ## 📦 Installation
 
@@ -36,6 +39,9 @@ npx bruno-sync generate --diff
 
 # Generate changelog
 npx bruno-sync generate --diff --changelog CHANGELOG.md
+
+# Generate React Query hooks
+npx bruno-sync generate-hooks -i ./bruno -o ./src/apis
 ```
 
 ### package.json Scripts
@@ -46,12 +52,128 @@ npx bruno-sync generate --diff --changelog CHANGELOG.md
     "api:generate": "bruno-sync generate -i ./bruno -o ./openapi.json",
     "api:diff": "bruno-sync generate --diff",
     "api:changelog": "bruno-sync generate --diff --changelog CHANGELOG.md",
-    "api:changelog:html": "bruno-sync generate --diff --changelog docs/changelog.html --changelog-format html"
+    "api:changelog:html": "bruno-sync generate --diff --changelog docs/changelog.html --changelog-format html",
+    "api:hooks": "bruno-sync generate-hooks -i ./bruno -o ./src/apis"
   }
 }
 ```
 
 ## 📖 Usage
+
+### React Query Hooks Generation
+
+Generate type-safe React Query hooks from your Bruno collection:
+
+```bash
+npx bruno-sync generate-hooks -i ./bruno -o ./src/apis
+```
+
+**Options:**
+- `-i, --input <path>`: Bruno collection directory (default: "./bruno")
+- `-o, --output <path>`: Output hooks directory (default: "./src/apis")
+- `--axios-path <path>`: Axios instance import path (default: "@/utils/axiosInstance")
+
+**Generated Structure:**
+
+```
+src/apis/
+  ├── queryKeys.ts                    # Auto-generated query keys
+  ├── applications/
+  │   ├── getApplicationsCompetitors.ts
+  │   ├── postApplications.ts
+  │   └── index.ts
+  └── users/
+      ├── getUsersProfile.ts
+      └── index.ts
+```
+
+**Example Generated Hook:**
+
+```typescript
+// src/apis/applications/getApplicationsCompetitors.ts
+import { AxiosError } from "axios";
+import { axiosInstance } from "@/utils/axiosInstance";
+import { QueryKeys } from "../queryKeys";
+import { useQuery } from "@tanstack/react-query";
+
+export interface FirstChoiceItem {
+  koreanName: string;
+  englishName: string;
+  studentCapacity: number;
+  gpa: string;
+  applicants: ApplicantsItem[];
+}
+
+export interface GetApplicationsCompetitorsResponse {
+  firstChoice: FirstChoiceItem[];
+  secondChoice: any[];
+  thirdChoice: any[];
+}
+
+const getApplicationsCompetitors = async (
+  params?: Record<string, any>
+): Promise<GetApplicationsCompetitorsResponse> => {
+  const res = await axiosInstance.get<GetApplicationsCompetitorsResponse>(
+    `/applications/competitors`,
+    { params }
+  );
+  return res.data;
+};
+
+const useGetApplicationsCompetitors = (params?: Record<string, any>) => {
+  return useQuery<GetApplicationsCompetitorsResponse, AxiosError>({
+    queryKey: [QueryKeys.applications.getApplicationsCompetitors],
+    queryFn: () => getApplicationsCompetitors(params),
+  });
+};
+
+export default useGetApplicationsCompetitors;
+```
+
+**Usage in Your App:**
+
+```typescript
+import { useGetApplicationsCompetitors } from '@/apis/applications';
+
+function CompetitorsPage() {
+  const { data, isLoading, error } = useGetApplicationsCompetitors();
+
+  if (isLoading) return <Loading />;
+  if (error) return <Error message={error.message} />;
+
+  return (
+    <div>
+      {data?.firstChoice.map((competitor) => (
+        <CompetitorCard key={competitor.koreanName} {...competitor} />
+      ))}
+    </div>
+  );
+}
+```
+
+**Mutations (POST/PUT/PATCH/DELETE):**
+
+```typescript
+import { usePostApplications } from '@/apis/applications';
+
+function ApplicationForm() {
+  const mutation = usePostApplications();
+
+  const handleSubmit = async (formData) => {
+    await mutation.mutateAsync({
+      universityId: 1,
+      choice: 'first'
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* form fields */}
+      <button disabled={mutation.isPending}>Submit</button>
+    </form>
+  );
+}
+```
 
 ### CLI Options
 
@@ -383,10 +505,10 @@ open docs/changelog.html
 - [x] Changelog generation (MD/JSON/HTML)
 - [x] Breaking change identification
 - [x] CLI tool
-- [ ] TypeScript type generation
-- [ ] API client generation
+- [x] TypeScript type generation
+- [x] API client generation
+- [x] React Query hooks generation
 - [ ] MSW mock generation
-- [ ] React Query hooks generation
 - [ ] Watch mode
 - [ ] Zod schema generation
 

@@ -11,6 +11,7 @@ import { resolve } from 'path';
 import { convertBrunoToOpenAPI } from '../converter/openapiConverter';
 import { detectChanges } from '../diff/changeDetector';
 import { generateChangelog, formatConsoleOutput, ChangelogFormat } from '../diff/changelogGenerator';
+import { generateHooks } from '../generator/index';
 
 const program = new Command();
 
@@ -103,6 +104,38 @@ program
       }
 
       console.log('\n✨ Done!\n');
+    } catch (error: any) {
+      console.error(`❌ Error: ${error.message}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('generate-hooks')
+  .description('Generate React Query hooks from Bruno collection')
+  .option('-i, --input <path>', 'Bruno collection directory', './bruno')
+  .option('-o, --output <path>', 'Output hooks directory', './src/apis')
+  .option('--axios-path <path>', 'Axios instance import path', '@/utils/axiosInstance')
+  .action(async (options) => {
+    try {
+      const inputDir = resolve(process.cwd(), options.input);
+      const outputDir = resolve(process.cwd(), options.output);
+
+      // 입력 디렉토리 확인
+      if (!existsSync(inputDir)) {
+        console.error(`❌ Bruno directory not found: ${inputDir}`);
+        process.exit(1);
+      }
+
+      console.log('🎣 Generating React Query hooks...\n');
+
+      await generateHooks({
+        brunoDir: inputDir,
+        outputDir,
+        axiosInstancePath: options.axiosPath,
+      });
+
+      console.log('\n🎉 React Query hooks generated successfully!');
     } catch (error: any) {
       console.error(`❌ Error: ${error.message}`);
       process.exit(1);
