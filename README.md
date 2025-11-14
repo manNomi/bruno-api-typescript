@@ -21,6 +21,9 @@ Convert your Bruno API collections to type-safe TypeScript code with React Query
 - **🎣 React Query Hooks**: Generate type-safe React Query hooks with axios from .bru files
 - **📦 Query Keys**: Auto-generate organized query keys based on folder structure
 - **🔧 TypeScript Types**: Infer TypeScript types from JSON response examples
+- **🎭 MSW Mock Handlers**: Auto-generate MSW (Mock Service Worker) handlers from .bru files
+- **📁 Folder Name Support**: Support Korean folder names with English keys (e.g., `사용자 [users]`)
+- **🚫 Mock Control**: Control MSW generation with `meta.done` field
 - **🤖 Auto-Sync**: Automatically sync API changes to frontend repo using GitHub Apps
 
 ## 📦 Installation
@@ -45,6 +48,9 @@ npx bruno-api generate --diff --changelog CHANGELOG.md
 
 # Generate React Query hooks
 npx bruno-api generate-hooks -i ./bruno -o ./src/apis
+
+# Generate React Query hooks with MSW handlers
+npx bruno-api generate-hooks -i ./bruno -o ./src/apis --msw-output ./src/mocks
 ```
 
 ### package.json Scripts
@@ -56,7 +62,8 @@ npx bruno-api generate-hooks -i ./bruno -o ./src/apis
     "api:diff": "bruno-api generate --diff",
     "api:changelog": "bruno-api generate --diff --changelog CHANGELOG.md",
     "api:changelog:html": "bruno-api generate --diff --changelog docs/changelog.html --changelog-format html",
-    "api:hooks": "bruno-api generate-hooks -i ./bruno -o ./src/apis"
+    "api:hooks": "bruno-api generate-hooks -i ./bruno -o ./src/apis",
+    "api:mocks": "bruno-api generate-hooks -i ./bruno -o ./src/apis --msw-output ./src/mocks"
   }
 }
 ```
@@ -75,6 +82,7 @@ npx bruno-api generate-hooks -i ./bruno -o ./src/apis
 - `-i, --input <path>`: Bruno collection directory (default: "./bruno")
 - `-o, --output <path>`: Output hooks directory (default: "./src/apis")
 - `--axios-path <path>`: Axios instance import path (default: "@/utils/axiosInstance")
+- `--msw-output <path>`: MSW handlers output directory (optional)
 
 **Generated Structure:**
 
@@ -306,11 +314,11 @@ Your Bruno collection should be organized by domain:
 
 ```
 bruno/
-├── applications/
+├── 지원서 [applications]/     # Korean name with English key
 │   ├── get-competitors.bru
 │   ├── create-application.bru
 │   └── submit-application.bru
-├── users/
+├── 사용자 [users]/            # Supports Korean folder names
 │   ├── get-profile.bru
 │   ├── update-profile.bru
 │   └── auth/
@@ -319,12 +327,16 @@ bruno/
 └── bruno.json
 ```
 
+**Note**: Folder names support the format `한글명 [EnglishKey]` where only the `EnglishKey` inside brackets is used for generated file names and domains.
+
 Each .bru file should have a `docs` block with JSON response example:
 
 ```bru
 meta {
   name: Get Competitors
   type: http
+  seq: 1
+  done: true  # Optional: Skip MSW generation if backend is complete
 }
 
 get /applications/competitors
@@ -501,6 +513,90 @@ open docs/changelog.html
 # Share with team for review
 ```
 
+## 🎭 MSW Mock Handlers
+
+Automatically generate MSW handlers from your Bruno files for frontend development:
+
+### Enable MSW Generation
+
+```bash
+npx bruno-api generate-hooks -i ./bruno -o ./src/apis --msw-output ./src/mocks
+```
+
+**Generated Structure:**
+
+```
+src/mocks/
+├── admin/
+│   ├── get-list.ts          # Individual handler
+│   ├── post-create.ts
+│   └── index.ts             # Domain handlers
+├── users/
+│   ├── get-profile.ts
+│   └── index.ts
+└── handlers.ts              # All handlers combined
+```
+
+**Generated Handler Example:**
+
+```typescript
+// src/mocks/admin/get-list.ts
+import { http, HttpResponse } from 'msw';
+
+export const handler = http.get('/api/admin/list', () => {
+  return HttpResponse.json({
+    "users": [
+      { "id": 1, "name": "홍길동" }
+    ]
+  });
+});
+```
+
+**Usage in Your App:**
+
+```typescript
+// src/mocks/browser.ts
+import { setupWorker } from 'msw/browser';
+import { handlers } from './handlers';
+
+export const worker = setupWorker(...handlers);
+
+// src/main.tsx
+if (import.meta.env.DEV) {
+  const { worker } = await import('./mocks/browser');
+  await worker.start();
+}
+```
+
+### Control MSW Generation
+
+Use the `done` field in meta block to skip MSW generation:
+
+```bru
+meta {
+  name: Get User Profile
+  type: http
+  seq: 1
+  done: true  # ✅ Skip MSW - backend is ready
+}
+
+get /users/profile
+
+docs {
+  ```json
+  {
+    "id": 1,
+    "name": "홍길동"
+  }
+  ```
+}
+```
+
+**When to use `done: true`:**
+- ✅ Backend API is complete and deployed
+- ✅ Legacy API already in production
+- ❌ Backend API still in development (omit `done` to generate MSW)
+
 ## 🎯 Roadmap
 
 - [x] Bruno to OpenAPI conversion
@@ -511,7 +607,9 @@ open docs/changelog.html
 - [x] TypeScript type generation
 - [x] API client generation
 - [x] React Query hooks generation
-- [ ] MSW mock generation
+- [x] MSW mock generation
+- [x] Korean folder name support
+- [x] MSW generation control (meta.done)
 - [ ] Watch mode
 - [ ] Zod schema generation
 
