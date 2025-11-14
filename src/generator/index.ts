@@ -9,11 +9,13 @@ import { parseBrunoFile } from '../parser/bruParser';
 import { extractApiFunction } from './apiClientGenerator';
 import { generateReactQueryHook } from './reactQueryGenerator';
 import { generateQueryKeyFile } from './queryKeyGenerator';
+import { generateMSWHandler, generateDomainHandlersIndex, generateMSWIndex } from './mswGenerator';
 
 export interface GenerateHooksOptions {
   brunoDir: string;
   outputDir: string;
   axiosInstancePath?: string;
+  mswOutputDir?: string; // MSW 핸들러 출력 디렉토리
 }
 
 /**
@@ -63,7 +65,7 @@ function extractDomain(filePath: string, brunoDir: string): string {
  * React Query 훅 생성
  */
 export async function generateHooks(options: GenerateHooksOptions): Promise<void> {
-  const { brunoDir, outputDir, axiosInstancePath = '@/utils/axiosInstance' } = options;
+  const { brunoDir, outputDir, axiosInstancePath = '@/utils/axiosInstance', mswOutputDir } = options;
 
   console.log('🔍 Searching for .bru files...');
   const brunoFiles = findBrunoFiles(brunoDir);
@@ -150,4 +152,89 @@ export async function generateHooks(options: GenerateHooksOptions): Promise<void
   console.log('\n📚 Usage example:');
   console.log(`import { useGetApplicationsCompetitors } from './${relative(process.cwd(), join(outputDir, 'applications'))}';\n`);
   console.log(`const { data, isLoading, error } = useGetApplicationsCompetitors();`);
+
+  // MSW 핸들러 생성 (옵션이 제공된 경우)
+  if (mswOutputDir) {
+    console.log('\n🎭 Generating MSW handlers...');
+    await generateMSWHandlers(parsedFiles, mswOutputDir);
+  }
+}
+
+/**
+ * MSW 핸들러 생성
+ */
+async function generateMSWHandlers(
+  parsedFiles: Array<{ filePath: string; parsed: any; domain: string }>,
+  mswOutputDir: string
+): Promise<void> {
+  // MSW 출력 디렉토리 생성
+  mkdirSync(mswOutputDir, { recursive: true });
+
+  // 도메인별로 핸들러 그룹화
+  const domainHandlers = new Map<string, Array<{ fileName: string; content: string }>>();
+
+  for (const { filePath, parsed, domain } of parsedFiles) {
+    const handler = generateMSWHandler(parsed, filePath, domain);
+
+    if (!handler) {
+      // done: true 또는 docs 없음
+      continue;
+    }
+
+    if (!domainHandlers.has(domain)) {
+      domainHandlers.set(domain, []);
+    }
+
+    domainHandlers.get(domain)!.push({
+      fileName: handler.fileName,
+      content: handler.content,
+    });
+  }
+
+  // 도메인별 디렉토리 및 파일 생성
+  const domains: string[] = [];
+
+  for (const [domain, handlers] of domainHandlers.entries()) {
+    domains.push(domain);
+
+    // 도메인 디렉토리 생성
+    const domainDir = join(mswOutputDir, domain);
+    mkdirSync(domainDir, { recursive: true });
+
+    // 각 핸들러 파일 작성
+    const handlerInfos: Array<{ fileName: string; handlerName: string }> = [];
+
+    for (const handler of handlers) {
+      const handlerPath = join(domainDir, handler.fileName);
+      writeFileSync(handlerPath, handler.content, 'utf-8');
+      console.log(`✅ MSW Generated: ${handlerPath}`);
+
+      handlerInfos.push({
+        fileName: handler.fileName,
+        handlerName: handler.fileName.replace('.ts', ''),
+      });
+    }
+
+    // 도메인별 index 파일 생성
+    const domainIndexContent = generateDomainHandlersIndex(domain, handlerInfos);
+    const domainIndexPath = join(domainDir, 'index.ts');
+    writeFileSync(domainIndexPath, domainIndexContent, 'utf-8');
+    console.log(`✅ MSW Index Generated: ${domainIndexPath}`);
+  }
+
+  // 전체 handlers index 파일 생성
+  if (domains.length > 0) {
+    const mswIndexContent = generateMSWIndex(domains);
+    const mswIndexPath = join(mswOutputDir, 'handlers.ts');
+    writeFileSync(mswIndexPath, mswIndexContent, 'utf-8');
+    console.log(`✅ MSW Main Index Generated: ${mswIndexPath}`);
+
+    console.log(`\n🎭 MSW handlers generated successfully!`);
+    console.log(`📂 MSW Output directory: ${mswOutputDir}`);
+    console.log(`\n📚 Usage example:`);
+    console.log(`import { handlers } from './${relative(process.cwd(), mswIndexPath).replace('.ts', '')}';\n`);
+    console.log(`const worker = setupWorker(...handlers);`);
+  } else {
+    console.log(`ℹ️  No MSW handlers generated (all files have done: true or missing docs)`);
+  }
 }

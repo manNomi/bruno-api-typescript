@@ -36,6 +36,7 @@ meta {
   name: API 이름
   type: http
   seq: 1
+  done: true  # MSW 생성 제외 (선택사항)
 }
 
 get /api/endpoint
@@ -72,7 +73,7 @@ tests {
 
 | 블록 | 필수 | 설명 |
 |------|------|------|
-| `meta` | ✅ | 파일 메타데이터 |
+| `meta` | ✅ | 파일 메타데이터 (done 필드로 MSW 생성 제어 가능) |
 | HTTP 메서드 | ✅ | `get`, `post`, `put`, `delete` 등 |
 | `headers` | ⚠️ | 헤더 (인증 필요시 필수) |
 | `body:json` | ⚠️ | 요청 본문 (POST/PUT 등에서 필수) |
@@ -157,6 +158,71 @@ docs {
 ```
 
 빈 배열 `[]`을 쓰면 타입 추론이 `Array<object>`로만 되므로, **반드시 예시 데이터 1개 이상 포함!**
+
+---
+
+## 🎭 MSW Mock 생성 제어
+
+### `done` 필드란?
+
+`meta` 블록에 `done: true`를 추가하면 **MSW(Mock Service Worker) 핸들러 생성을 건너뜁니다**.
+
+이미 백엔드 API가 완성되어 Mock이 필요 없는 경우 사용하세요.
+
+#### MSW 생성 O (done 없음 또는 false)
+
+```bru
+meta {
+  name: Get User Profile
+  type: http
+  seq: 1
+}
+
+get /users/profile
+
+docs {
+  ```json
+  {
+    "id": 1,
+    "name": "홍길동"
+  }
+  ```
+}
+```
+
+→ **MSW 핸들러가 자동 생성됩니다**
+
+#### MSW 생성 X (done: true)
+
+```bru
+meta {
+  name: Get User Profile
+  type: http
+  seq: 1
+  done: true  # MSW 생성 건너뛰기
+}
+
+get /users/profile
+
+docs {
+  ```json
+  {
+    "id": 1,
+    "name": "홍길동"
+  }
+  ```
+}
+```
+
+→ **MSW 핸들러가 생성되지 않습니다** (이미 백엔드 완료)
+
+### 언제 done을 사용하나요?
+
+| 상황 | done 설정 | 이유 |
+|------|----------|------|
+| 백엔드 API 개발 중 | ❌ (생략 또는 false) | 프론트엔드가 Mock으로 개발 |
+| 백엔드 API 완료 | ✅ `done: true` | 실제 API 사용, Mock 불필요 |
+| 레거시 API | ✅ `done: true` | 이미 운영 중, Mock 불필요 |
 
 ---
 
@@ -536,6 +602,7 @@ docs {
 ### 📝 내용 작성
 
 - [ ] `meta` 블록 작성 (name 필수)
+- [ ] MSW 필요 여부 판단 후 `done: true` 추가 (백엔드 완료시)
 - [ ] HTTP 메서드와 경로 명확히 표기
 - [ ] 인증이 필요하면 `headers` 블록에 Authorization
 - [ ] POST/PUT이면 `body:json` 블록 작성
