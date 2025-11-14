@@ -18,8 +18,11 @@ Bruno API 컬렉션을 타입 안전한 TypeScript 코드로 자동 변환합니
 - **📝 Changelog 자동 생성**: Markdown, JSON, HTML 형식으로 변경 이력 생성
 - **🎯 도메인별 그룹화**: 폴더 구조 기반 자동 분류
 - **🔍 깊은 스키마 분석**: 중첩 객체 내 필드 레벨 변경사항까지 추적
-- **🌐 Swagger UI 자동 배포**: GitHub Pages로 API 문서 자동 게시 🆕
-- **🤖 PR 자동 리뷰**: PR에 변경사항 자동 코멘트 🆕
+- **🎭 MSW Mock 핸들러**: .bru 파일에서 MSW 핸들러 자동 생성 🆕
+- **📁 한글 폴더명 지원**: `사용자 [users]` 형식의 폴더명 지원 🆕
+- **🚫 Mock 제어**: `meta.done` 필드로 MSW 생성 제어 🆕
+- **🌐 Swagger UI 자동 배포**: GitHub Pages로 API 문서 자동 게시
+- **🤖 PR 자동 리뷰**: PR에 변경사항 자동 코멘트
 
 ## 📦 설치
 
@@ -185,11 +188,11 @@ Bruno 컬렉션을 도메인별로 구조화하세요:
 
 ```
 bruno/
-├── applications/        # 지원서 관련 API
+├── 지원서 [applications]/  # 한글명 + 영문 키
 │   ├── get-competitors.bru
 │   ├── create-application.bru
 │   └── submit-application.bru
-├── users/              # 사용자 관련 API
+├── 사용자 [users]/        # 한글 폴더명 지원
 │   ├── get-profile.bru
 │   ├── update-profile.bru
 │   └── auth/
@@ -198,12 +201,16 @@ bruno/
 └── bruno.json
 ```
 
+**참고**: 폴더명은 `한글명 [EnglishKey]` 형식을 지원하며, 대괄호 안의 `EnglishKey`만 파일명 및 도메인으로 사용됩니다.
+
 각 .bru 파일은 `docs` 블록에 JSON 응답 예시를 포함해야 합니다:
 
 ```bru
 meta {
   name: 경쟁 현황 조회
   type: http
+  seq: 1
+  done: true  # 선택사항: 백엔드 완료시 MSW 생성 건너뛰기
 }
 
 get /applications/competitors
@@ -506,10 +513,12 @@ open docs/changelog.html
 - [x] CLI 도구
 - [x] Swagger UI 자동 배포
 - [x] PR 자동 리뷰
-- [ ] TypeScript 타입 자동 생성
-- [ ] API 클라이언트 자동 생성
-- [ ] MSW Mock 자동 생성
-- [ ] React Query hooks 생성
+- [x] TypeScript 타입 자동 생성
+- [x] API 클라이언트 자동 생성
+- [x] MSW Mock 자동 생성
+- [x] React Query hooks 생성
+- [x] 한글 폴더명 지원
+- [x] MSW 생성 제어 (meta.done)
 - [ ] Watch 모드
 - [ ] Zod 스키마 생성
 

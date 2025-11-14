@@ -24,6 +24,7 @@ export interface ParsedBrunoFile {
     name: string;
     type: string;
     seq?: number;
+    done?: boolean;
   };
   http: {
     method: string;
@@ -184,6 +185,9 @@ function parseMeta(result: ParsedBrunoFile, lines: string[]): void {
       result.meta.type = trimmed.substring(5).trim();
     } else if (trimmed.startsWith('seq:')) {
       result.meta.seq = parseInt(trimmed.substring(4).trim(), 10);
+    } else if (trimmed.startsWith('done:')) {
+      const value = trimmed.substring(5).trim().toLowerCase();
+      result.meta.done = value === 'true';
     }
   }
 }

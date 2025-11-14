@@ -184,10 +184,19 @@ function isHttpMethod(method: string): boolean {
 
 /**
  * 도메인 추출
+ * "한글명 [EnglishKey]" 형식에서 EnglishKey만 추출
  */
 function extractDomain(operation: any): string {
   if (operation.tags && operation.tags.length > 0) {
-    return operation.tags[0];
+    const tag = operation.tags[0];
+
+    // [키] 패턴 추출
+    const match = tag.match(/\[([^\]]+)\]/);
+    if (match) {
+      return match[1]; // 대괄호 안의 키만 반환
+    }
+
+    return tag;
   }
   return 'default';
 }

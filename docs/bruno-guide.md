@@ -36,6 +36,7 @@ meta {
   name: API 이름
   type: http
   seq: 1
+  done: true  # MSW 생성 제외 (선택사항)
 }
 
 get /api/endpoint
@@ -72,7 +73,7 @@ tests {
 
 | 블록 | 필수 | 설명 |
 |------|------|------|
-| `meta` | ✅ | 파일 메타데이터 |
+| `meta` | ✅ | 파일 메타데이터 (done 필드로 MSW 생성 제어 가능) |
 | HTTP 메서드 | ✅ | `get`, `post`, `put`, `delete` 등 |
 | `headers` | ⚠️ | 헤더 (인증 필요시 필수) |
 | `body:json` | ⚠️ | 요청 본문 (POST/PUT 등에서 필수) |
@@ -160,31 +161,110 @@ docs {
 
 ---
 
+## 🎭 MSW Mock 생성 제어
+
+### `done` 필드란?
+
+`meta` 블록에 `done: true`를 추가하면 **MSW(Mock Service Worker) 핸들러 생성을 건너뜁니다**.
+
+이미 백엔드 API가 완성되어 Mock이 필요 없는 경우 사용하세요.
+
+#### MSW 생성 O (done 없음 또는 false)
+
+```bru
+meta {
+  name: Get User Profile
+  type: http
+  seq: 1
+}
+
+get /users/profile
+
+docs {
+  ```json
+  {
+    "id": 1,
+    "name": "홍길동"
+  }
+  ```
+}
+```
+
+→ **MSW 핸들러가 자동 생성됩니다**
+
+#### MSW 생성 X (done: true)
+
+```bru
+meta {
+  name: Get User Profile
+  type: http
+  seq: 1
+  done: true  # MSW 생성 건너뛰기
+}
+
+get /users/profile
+
+docs {
+  ```json
+  {
+    "id": 1,
+    "name": "홍길동"
+  }
+  ```
+}
+```
+
+→ **MSW 핸들러가 생성되지 않습니다** (이미 백엔드 완료)
+
+### 언제 done을 사용하나요?
+
+| 상황 | done 설정 | 이유 |
+|------|----------|------|
+| 백엔드 API 개발 중 | ❌ (생략 또는 false) | 프론트엔드가 Mock으로 개발 |
+| 백엔드 API 완료 | ✅ `done: true` | 실제 API 사용, Mock 불필요 |
+| 레거시 API | ✅ `done: true` | 이미 운영 중, Mock 불필요 |
+
+---
+
 ## 도메인별 폴더 구조
 
 ### 권장 구조
 
 ```
 bruno/
-├── applications/        # 지원서 도메인
+├── 지원서 [applications]/    # 지원서 도메인
 │   ├── get-list.bru
 │   ├── get-detail.bru
 │   ├── create.bru
 │   └── update.bru
-├── users/              # 사용자 도메인
+├── 사용자 [users]/           # 사용자 도메인
 │   ├── profile/
 │   │   ├── get.bru
 │   │   └── update.bru
 │   └── auth/
 │       ├── login.bru
 │       └── logout.bru
-├── universities/       # 대학 도메인
+├── 대학 [universities]/      # 대학 도메인
 │   ├── get-list.bru
 │   └── get-detail.bru
 └── bruno.json
 ```
 
-### 네이밍 컨벤션
+### 폴더명 작성 규칙
+
+폴더명은 **"한글명 [EnglishKey]"** 형식으로 작성합니다:
+
+- ✅ `사용자 [users]/` - 한글명으로 가독성 확보, 대괄호 안 영문 키로 파일명 생성
+- ✅ `지원서 [applications]/` - API 도메인과 매칭되는 영문 키 사용
+- ✅ `대학 [universities]/` - 복수형 사용 권장
+
+**중요**: 대괄호 `[]` 안의 영문 키만 추출되어 파일명 및 도메인으로 사용됩니다.
+
+**예시**:
+- `사용자 [admin]/get-list.bru` → 도메인: `admin`, 생성될 파일: `admin/useGetAdminList.ts`
+- `상품 [products]/create.bru` → 도메인: `products`, 생성될 파일: `products/useCreateProducts.ts`
+
+### 파일명 네이밍 컨벤션
 
 | 작업 | 파일명 예시 |
 |------|-------------|
@@ -195,7 +275,7 @@ bruno/
 | 삭제 | `delete.bru` |
 | 특수 작업 | `submit.bru`, `approve.bru` 등 |
 
-**한글 사용 금지!** 파일명은 영문 소문자와 하이픈(`-`)만 사용하세요.
+**파일명 규칙**: 영문 소문자와 하이픈(`-`)만 사용하세요.
 
 ---
 
@@ -522,6 +602,7 @@ docs {
 ### 📝 내용 작성
 
 - [ ] `meta` 블록 작성 (name 필수)
+- [ ] MSW 필요 여부 판단 후 `done: true` 추가 (백엔드 완료시)
 - [ ] HTTP 메서드와 경로 명확히 표기
 - [ ] 인증이 필요하면 `headers` 블록에 Authorization
 - [ ] POST/PUT이면 `body:json` 블록 작성
