@@ -31,7 +31,7 @@ export function generateReactQueryHook(
     ? generateUseQueryHook(parsed, apiFunc, domain, axiosInstancePath)
     : generateUseMutationHook(parsed, apiFunc, domain, axiosInstancePath);
 
-  const fileName = `${apiFunc.name}.ts`;
+  const fileName = `${method.toLowerCase()}-${apiFunc.name}.ts`;
 
   return {
     fileName,
