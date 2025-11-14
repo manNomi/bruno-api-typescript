@@ -166,25 +166,39 @@ docs {
 
 ```
 bruno/
-├── applications/        # 지원서 도메인
+├── 지원서 [applications]/    # 지원서 도메인
 │   ├── get-list.bru
 │   ├── get-detail.bru
 │   ├── create.bru
 │   └── update.bru
-├── users/              # 사용자 도메인
+├── 사용자 [users]/           # 사용자 도메인
 │   ├── profile/
 │   │   ├── get.bru
 │   │   └── update.bru
 │   └── auth/
 │       ├── login.bru
 │       └── logout.bru
-├── universities/       # 대학 도메인
+├── 대학 [universities]/      # 대학 도메인
 │   ├── get-list.bru
 │   └── get-detail.bru
 └── bruno.json
 ```
 
-### 네이밍 컨벤션
+### 폴더명 작성 규칙
+
+폴더명은 **"한글명 [EnglishKey]"** 형식으로 작성합니다:
+
+- ✅ `사용자 [users]/` - 한글명으로 가독성 확보, 대괄호 안 영문 키로 파일명 생성
+- ✅ `지원서 [applications]/` - API 도메인과 매칭되는 영문 키 사용
+- ✅ `대학 [universities]/` - 복수형 사용 권장
+
+**중요**: 대괄호 `[]` 안의 영문 키만 추출되어 파일명 및 도메인으로 사용됩니다.
+
+**예시**:
+- `사용자 [admin]/get-list.bru` → 도메인: `admin`, 생성될 파일: `admin/useGetAdminList.ts`
+- `상품 [products]/create.bru` → 도메인: `products`, 생성될 파일: `products/useCreateProducts.ts`
+
+### 파일명 네이밍 컨벤션
 
 | 작업 | 파일명 예시 |
 |------|-------------|
@@ -195,7 +209,7 @@ bruno/
 | 삭제 | `delete.bru` |
 | 특수 작업 | `submit.bru`, `approve.bru` 등 |
 
-**한글 사용 금지!** 파일명은 영문 소문자와 하이픈(`-`)만 사용하세요.
+**파일명 규칙**: 영문 소문자와 하이픈(`-`)만 사용하세요.
 
 ---
 

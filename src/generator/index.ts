@@ -43,11 +43,20 @@ function findBrunoFiles(dir: string): string[] {
 
 /**
  * 파일 경로에서 도메인 추출
+ * "한글명 [EnglishKey]" 형식에서 EnglishKey만 추출
  */
 function extractDomain(filePath: string, brunoDir: string): string {
   const relativePath = relative(brunoDir, filePath);
   const parts = relativePath.split('/');
-  return parts[0]; // 첫 번째 폴더가 도메인
+  const folderName = parts[0]; // 첫 번째 폴더가 도메인
+
+  // [키] 패턴 추출
+  const match = folderName.match(/\[([^\]]+)\]/);
+  if (match) {
+    return match[1]; // 대괄호 안의 키만 반환
+  }
+
+  return folderName; // 대괄호가 없으면 폴더명 그대로 반환
 }
 
 /**
