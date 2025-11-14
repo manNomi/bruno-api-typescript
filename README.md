@@ -4,9 +4,11 @@
 
 Convert your Bruno API collections to type-safe TypeScript code with React Query hooks, Axios clients, and OpenAPI specifications. Includes automatic change detection and changelog generation.
 
-**[한국어 문서 (Korean)](./README.ko.md)** | **[빠른 시작 (5분)](./QUICKSTART.md)** | **[⚙️ 완전 설정 가이드](./SETUP-GUIDE.md)**
+**[한국어 문서 (Korean)](./README.ko.md)** | **[📚 전체 문서](./docs/)**
 
-**개발자 가이드**: [📝 Bruno 파일 작성](./docs/BRUNO-GUIDE.md) | [🎨 프론트엔드](./docs/FRONTEND-GUIDE.md) | [⚙️ GitHub Actions 설정](./docs/GITHUB-ACTIONS-SETUP.md) | [🤖 GitHub Apps 자동 동기화](./docs/GITHUB-APPS-SETUP.md)
+**빠른 시작**: [⚡ Quick Start](./docs/quickstart.md) | [⚙️ Setup Guide](./docs/setup-guide.md)
+
+**가이드**: [📝 Bruno 파일 작성](./docs/bruno-guide.md) | [🎨 프론트엔드](./docs/frontend-guide.md) | [🤖 GitHub Actions](./docs/github-actions.md) | [🔄 GitHub Apps](./docs/github-apps.md)
 
 ## ✨ Features
 

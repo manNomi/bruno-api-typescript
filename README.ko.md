@@ -1,12 +1,14 @@
-# bruno-openapi-sync
+# bruno-api-typescript
 
-> **Bruno .bru 파일 → OpenAPI 3.0 자동 변환 + API 변경사항 추적**
+> **Bruno .bru 파일로 TypeScript API 클라이언트, React Query 훅, OpenAPI 스펙 자동 생성**
 
-Bruno API 컬렉션을 OpenAPI 스펙으로 자동 변환하고, 버전 간 변경사항을 자동으로 감지하여 Changelog를 생성합니다.
+Bruno API 컬렉션을 타입 안전한 TypeScript 코드로 자동 변환합니다. React Query 훅, Axios 클라이언트, OpenAPI 스펙을 생성하고, 변경사항을 자동 감지하여 Changelog를 만듭니다.
 
-**[🚀 5분 빠른 시작](./QUICKSTART.md)** | **[⚙️ 완전 설정 가이드](./SETUP-GUIDE.md)** | **[영문 README](./README.md)**
+**[영문 README](./README.md)** | **[📚 전체 문서](./docs/)**
 
-**개발자 가이드**: [📝 Bruno 파일 작성](./docs/BRUNO-GUIDE.md) | [🎨 프론트엔드](./docs/FRONTEND-GUIDE.md) | [⚙️ GitHub Actions 설정](./docs/GITHUB-ACTIONS-SETUP.md)
+**빠른 시작**: [⚡ Quick Start](./docs/quickstart.md) | [⚙️ Setup Guide](./docs/setup-guide.md)
+
+**가이드**: [📝 Bruno 파일 작성](./docs/bruno-guide.md) | [🎨 프론트엔드](./docs/frontend-guide.md) | [🤖 GitHub Actions](./docs/github-actions.md) | [🔄 GitHub Apps](./docs/github-apps.md)
 
 ## ✨ 주요 기능
 
