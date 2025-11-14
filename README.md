@@ -6,7 +6,7 @@ Convert your Bruno API collections to type-safe TypeScript code with React Query
 
 **[한국어 문서 (Korean)](./README.ko.md)** | **[빠른 시작 (5분)](./QUICKSTART.md)** | **[⚙️ 완전 설정 가이드](./SETUP-GUIDE.md)**
 
-**개발자 가이드**: [📝 Bruno 파일 작성](./docs/BRUNO-GUIDE.md) | [🎨 프론트엔드](./docs/FRONTEND-GUIDE.md) | [⚙️ GitHub Actions 설정](./docs/GITHUB-ACTIONS-SETUP.md)
+**개발자 가이드**: [📝 Bruno 파일 작성](./docs/BRUNO-GUIDE.md) | [🎨 프론트엔드](./docs/FRONTEND-GUIDE.md) | [⚙️ GitHub Actions 설정](./docs/GITHUB-ACTIONS-SETUP.md) | [🤖 GitHub Apps 자동 동기화](./docs/GITHUB-APPS-SETUP.md)
 
 ## ✨ Features
 
@@ -19,6 +19,7 @@ Convert your Bruno API collections to type-safe TypeScript code with React Query
 - **🎣 React Query Hooks**: Generate type-safe React Query hooks with axios from .bru files
 - **📦 Query Keys**: Auto-generate organized query keys based on folder structure
 - **🔧 TypeScript Types**: Infer TypeScript types from JSON response examples
+- **🤖 Auto-Sync**: Automatically sync API changes to frontend repo using GitHub Apps
 
 ## 📦 Installation
 
