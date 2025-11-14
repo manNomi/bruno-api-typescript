@@ -968,6 +968,13 @@ bruno/products/v2/get-list.bru
   → src/apis/products/getList.ts
 ```
 
+**파일명 생성 규칙**:
+- .bru 파일명을 camelCase로 변환
+- `get-user.bru` → `getUser.ts`
+- `post-application.bru` → `postApplication.ts`
+- `get-competitors.bru` → `getCompetitors.ts`
+- `update-user-profile.bru` → `updateUserProfile.ts`
+
 ---
 
 ### 3. package.json 스크립트 설정
@@ -1278,6 +1285,11 @@ npx bruno-api generate-hooks -i /absolute/path/to/bruno
 ---
 
 ## 📝 변경 이력
+
+### v0.3.1 (2024-01-14)
+- ✅ **파일명 생성 방식 개선**: .bru 파일명 기반으로 변경
+  - 이전: URL 기반 (`GET /users/:userId` → `getUsersByUserId.ts`)
+  - 개선: 파일명 기반 (`get-user.bru` → `getUser.ts`)
 
 ### v0.3.0 (2024-01-14)
 - ✅ useQuery에 query params 포함

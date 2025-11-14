@@ -27,7 +27,9 @@ export function extractApiFunction(parsed: ParsedBrunoFile, filePath: string): A
     return null;
   }
 
-  const functionName = urlToFunctionName(http.method, http.url);
+  // .bru 파일명에서 함수명 생성
+  const fileName = filePath.split('/').pop()?.replace('.bru', '') || '';
+  const functionName = toCamelCase(fileName);
   const responseType = functionNameToTypeName(functionName);
 
   // URL에 파라미터가 있는지 확인
