@@ -116,6 +116,10 @@ program
   .option('-i, --input <path>', 'Bruno collection directory', './bruno')
   .option('-o, --output <path>', 'Output hooks directory', './src/apis')
   .option('--axios-path <path>', 'Axios instance import path', '@/utils/axiosInstance')
+  .option('--force', 'Overwrite existing files with user modifications', false)
+  .option('--no-backup', 'Do not create backup files when overwriting')
+  .option('--backup-dir <path>', 'Directory for backup files')
+  .option('--dry-run', 'Check for conflicts without writing files', false)
   .action(async (options) => {
     try {
       const inputDir = resolve(process.cwd(), options.input);
@@ -129,13 +133,23 @@ program
 
       console.log('🎣 Generating React Query hooks...\n');
 
+      if (options.dryRun) {
+        console.log('📋 DRY RUN MODE - Checking for conflicts...\n');
+      }
+
       await generateHooks({
         brunoDir: inputDir,
         outputDir,
         axiosInstancePath: options.axiosPath,
+        force: options.force,
+        backup: options.backup !== false, // --no-backup을 처리하기 위해
+        backupDir: options.backupDir ? resolve(process.cwd(), options.backupDir) : undefined,
+        dryRun: options.dryRun,
       });
 
-      console.log('\n🎉 React Query hooks generated successfully!');
+      if (!options.dryRun) {
+        console.log('\n🎉 React Query hooks generated successfully!');
+      }
     } catch (error: any) {
       console.error(`❌ Error: ${error.message}`);
       process.exit(1);
