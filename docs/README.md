@@ -9,16 +9,19 @@ Complete documentation for bruno-api-typescript
 - **[Setup Guide](setup-guide.md)** - Complete setup instructions
 - **[Project Summary](project-summary.md)** - Overview and architecture
 
-### Writing Bruno Files
-- **[Bruno Guide](bruno-guide.md)** - How to write .bru files for API documentation
+### Core Guides
+- **[Bruno File Guide](bruno-file-guide.md)** - How to write .bru files for code generation
+- **[MSW Setup Guide](msw-setup.md)** - Mock Service Worker integration
+- **[Frontend Guide](frontend-guide.md)** - Using generated React Query hooks
 
-### Frontend Integration
-- **[Frontend Guide](frontend-guide.md)** - Using generated React Query hooks in your app
-
-### Automation
-- **[GitHub Actions](github-actions.md)** - Set up GitHub Actions for CI/CD
-- **[GitHub Apps](github-apps.md)** - Auto-sync with GitHub Apps (Recommended)
+### CI/CD & Automation
+- **[GitHub Actions Setup](github-actions-setup.md)** - Complete CI/CD automation guide (NEW)
+- **[GitHub Actions](github-actions.md)** - Legacy GitHub Actions guide
+- **[GitHub Apps](github-apps.md)** - Auto-sync with GitHub Apps
 - **[Workflow Templates](workflow-templates.md)** - Ready-to-use workflow templates
+
+### Reference
+- **[Bruno Guide](bruno-guide.md)** - Detailed .bru file documentation
 
 ---
 
