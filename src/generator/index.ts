@@ -3,19 +3,21 @@
  * Bruno 파일들을 읽어서 React Query 훅들을 생성
  */
 
-import { readdirSync, statSync, mkdirSync, writeFileSync } from 'fs';
+import { readdirSync, statSync, mkdirSync, writeFileSync, existsSync } from 'fs';
 import { join, relative, dirname } from 'path';
-import { parseBrunoFile } from '../parser/bruParser';
+import { parseBrunoFile, extractJsonFromDocs } from '../parser/bruParser';
 import { extractApiFunction } from './apiClientGenerator';
-import { generateReactQueryHook } from './reactQueryGenerator';
+import { generateReactQueryHookWithWrapper } from './reactQueryGenerator';
 import { generateQueryKeyFile } from './queryKeyGenerator';
 import { generateMSWHandler, generateDomainHandlersIndex, generateMSWIndex } from './mswGenerator';
+import { generateTest } from './testGenerator';
 
 export interface GenerateHooksOptions {
   brunoDir: string;
   outputDir: string;
   axiosInstancePath?: string;
   mswOutputDir?: string; // MSW 핸들러 출력 디렉토리
+  testOutputDir?: string; // 테스트 파일 출력 디렉토리 (기본: outputDir과 동일)
 }
 
 /**
@@ -65,7 +67,13 @@ function extractDomain(filePath: string, brunoDir: string): string {
  * React Query 훅 생성
  */
 export async function generateHooks(options: GenerateHooksOptions): Promise<void> {
-  const { brunoDir, outputDir, axiosInstancePath = '@/utils/axiosInstance', mswOutputDir } = options;
+  const {
+    brunoDir,
+    outputDir,
+    axiosInstancePath = '@/utils/axiosInstance',
+    mswOutputDir,
+    testOutputDir = outputDir // 기본값: outputDir과 동일
+  } = options;
 
   console.log('🔍 Searching for .bru files...');
   const brunoFiles = findBrunoFiles(brunoDir);
@@ -113,8 +121,8 @@ export async function generateHooks(options: GenerateHooksOptions): Promise<void
       continue;
     }
 
-    // 훅 생성
-    const hook = generateReactQueryHook(parsed, apiFunc, domain, axiosInstancePath);
+    // 훅 생성 (.generated.ts + wrapper)
+    const hookWithWrapper = generateReactQueryHookWithWrapper(parsed, apiFunc, domain, axiosInstancePath);
 
     // 도메인 디렉토리 생성
     const domainDir = join(outputDir, domain);
@@ -123,17 +131,31 @@ export async function generateHooks(options: GenerateHooksOptions): Promise<void
       domainDirs.add(domainDir);
     }
 
-    // 훅 파일 작성
-    const hookPath = join(domainDir, hook.fileName);
-    writeFileSync(hookPath, hook.content, 'utf-8');
-    console.log(`✅ Generated: ${hookPath}`);
+    // 1. .generated.ts 파일 작성 (항상 덮어쓰기)
+    const generatedPath = join(domainDir, hookWithWrapper.generatedFile.fileName);
+    writeFileSync(generatedPath, hookWithWrapper.generatedFile.content, 'utf-8');
+    console.log(`✅ Generated: ${generatedPath}`);
+
+    // 2. wrapper 파일 작성 (존재하면 스킵)
+    const wrapperPath = join(domainDir, hookWithWrapper.wrapperFile.fileName);
+    if (existsSync(wrapperPath)) {
+      console.log(`⏭️  Skipped: ${wrapperPath} (already exists, preserving custom code)`);
+    } else {
+      writeFileSync(wrapperPath, hookWithWrapper.wrapperFile.content, 'utf-8');
+      console.log(`✅ Generated: ${wrapperPath}`);
+    }
   }
 
   // 인덱스 파일 생성 (선택사항)
   console.log('\n📄 Generating index files...');
   for (const domainDir of domainDirs) {
     const domain = relative(outputDir, domainDir);
-    const files = readdirSync(domainDir).filter(f => f.endsWith('.ts'));
+    const files = readdirSync(domainDir).filter(f =>
+      f.endsWith('.ts') &&
+      !f.endsWith('.generated.ts') &&  // .generated.ts 제외
+      !f.endsWith('.test.ts') &&        // .test.ts 제외
+      f !== 'index.ts'                  // index.ts 자체 제외
+    );
 
     const indexContent = files
       .map(file => {
@@ -145,6 +167,12 @@ export async function generateHooks(options: GenerateHooksOptions): Promise<void
     const indexPath = join(domainDir, 'index.ts');
     writeFileSync(indexPath, indexContent, 'utf-8');
     console.log(`✅ Generated: ${indexPath}`);
+  }
+
+  // 테스트 파일 생성 (옵션이 제공된 경우)
+  if (testOutputDir) {
+    console.log('\n🧪 Generating test files...');
+    await generateTestFiles(parsedFiles, testOutputDir, outputDir);
   }
 
   console.log('\n✨ All hooks generated successfully!');
@@ -236,5 +264,63 @@ async function generateMSWHandlers(
     console.log(`const worker = setupWorker(...handlers);`);
   } else {
     console.log(`ℹ️  No MSW handlers generated (all files have done: true or missing docs)`);
+  }
+}
+
+/**
+ * 테스트 파일 생성
+ */
+async function generateTestFiles(
+  parsedFiles: Array<{ filePath: string; parsed: any; domain: string }>,
+  testOutputDir: string,
+  hooksOutputDir: string
+): Promise<void> {
+  let testCount = 0;
+
+  for (const { filePath, parsed, domain } of parsedFiles) {
+    const apiFunc = extractApiFunction(parsed, filePath);
+    if (!apiFunc) {
+      continue;
+    }
+
+    // docs에서 response 데이터 추출
+    if (!parsed.docs) {
+      console.log(`⚠️  Skipped test for ${filePath}: No docs block`);
+      continue;
+    }
+
+    const responseData = extractJsonFromDocs(parsed.docs);
+    if (!responseData) {
+      console.log(`⚠️  Skipped test for ${filePath}: Invalid JSON in docs`);
+      continue;
+    }
+
+    // 훅 이름 생성
+    const hookName = `use${apiFunc.name.charAt(0).toUpperCase()}${apiFunc.name.slice(1)}`;
+
+    // 테스트 파일 생성
+    const testFile = generateTest(parsed, hookName, domain, responseData);
+    if (!testFile) {
+      continue;
+    }
+
+    // 테스트 디렉토리 생성
+    const testDomainDir = join(testOutputDir, domain);
+    mkdirSync(testDomainDir, { recursive: true });
+
+    // 테스트 파일 작성
+    const testPath = join(testDomainDir, testFile.fileName);
+    writeFileSync(testPath, testFile.content, 'utf-8');
+    console.log(`✅ Test Generated: ${testPath}`);
+    testCount++;
+  }
+
+  if (testCount > 0) {
+    console.log(`\n🧪 ${testCount} test files generated successfully!`);
+    console.log(`📂 Test Output directory: ${testOutputDir}`);
+    console.log(`\n📚 Run tests:`);
+    console.log(`npm test`);
+  } else {
+    console.log(`ℹ️  No test files generated (missing docs blocks)`);
   }
 }
