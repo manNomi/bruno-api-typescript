@@ -11,6 +11,7 @@ import { generateReactQueryHookWithWrapper } from './reactQueryGenerator';
 import { generateQueryKeyFile } from './queryKeyGenerator';
 import { generateMSWHandler, generateDomainHandlersIndex, generateMSWIndex } from './mswGenerator';
 import { generateTest } from './testGenerator';
+import { generateFixtures, generateFixturesIndex } from './fixtureGenerator';
 
 export interface GenerateHooksOptions {
   brunoDir: string;
@@ -248,6 +249,41 @@ async function generateMSWHandlers(
     const domainIndexPath = join(domainDir, 'index.ts');
     writeFileSync(domainIndexPath, domainIndexContent, 'utf-8');
     console.log(`✅ MSW Index Generated: ${domainIndexPath}`);
+  }
+
+  // Fixture 파일 생성
+  console.log('\n📦 Generating fixtures...');
+  const domainFilesMap = new Map<string, Array<{ parsed: any; name: string }>>();
+
+  for (const { filePath, parsed, domain } of parsedFiles) {
+    if (!domainFilesMap.has(domain)) {
+      domainFilesMap.set(domain, []);
+    }
+
+    const apiFunc = extractApiFunction(parsed, filePath);
+    if (apiFunc) {
+      domainFilesMap.get(domain)!.push({
+        parsed,
+        name: apiFunc.name,
+      });
+    }
+  }
+
+  const fixturesDomains: string[] = [];
+  for (const [domain, files] of domainFilesMap.entries()) {
+    const fixture = generateFixtures(files, domain);
+    const fixturePath = join(mswOutputDir, fixture.fileName);
+    writeFileSync(fixturePath, fixture.content, 'utf-8');
+    console.log(`✅ Fixture Generated: ${fixturePath}`);
+    fixturesDomains.push(domain);
+  }
+
+  // Fixtures index 파일
+  if (fixturesDomains.length > 0) {
+    const fixturesIndexContent = generateFixturesIndex(fixturesDomains);
+    const fixturesIndexPath = join(mswOutputDir, 'fixtures.ts');
+    writeFileSync(fixturesIndexPath, fixturesIndexContent, 'utf-8');
+    console.log(`✅ Fixtures Index Generated: ${fixturesIndexPath}`);
   }
 
   // 전체 handlers index 파일 생성

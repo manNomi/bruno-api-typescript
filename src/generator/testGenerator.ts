@@ -10,6 +10,14 @@ export interface TestFile {
   content: string;
 }
 
+export interface TestGeneratorOptions {
+  includeEdgeCases?: boolean;      // 경계값 테스트
+  includeAuthTests?: boolean;      // 401/403 테스트
+  includeRetryTests?: boolean;     // 재시도 로직 테스트
+  includeLoadingTests?: boolean;   // 로딩 상태 테스트
+  includeSnapshot?: boolean;       // 스냅샷 테스트
+}
+
 /**
  * React Query 훅 테스트 코드 생성
  */
@@ -17,7 +25,14 @@ export function generateTest(
   parsed: ParsedBrunoFile,
   hookName: string,
   domain: string,
-  responseData: any
+  responseData: any,
+  options: TestGeneratorOptions = {
+    includeEdgeCases: true,
+    includeAuthTests: true,
+    includeRetryTests: false,
+    includeLoadingTests: true,
+    includeSnapshot: true,
+  }
 ): TestFile | null {
   const { method, url } = parsed.http;
 
@@ -25,8 +40,8 @@ export function generateTest(
   const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase());
 
   const testContent = isMutation
-    ? generateMutationTest(hookName, method, url, responseData, domain)
-    : generateQueryTest(hookName, method, url, responseData, domain);
+    ? generateMutationTest(hookName, method, url, responseData, domain, options)
+    : generateQueryTest(hookName, method, url, responseData, domain, options);
 
   return {
     fileName: `${hookName}.test.ts`,
@@ -42,7 +57,8 @@ function generateQueryTest(
   method: string,
   url: string,
   responseData: any,
-  domain: string
+  domain: string,
+  options: TestGeneratorOptions
 ): string {
   const hookPath = `./${hookName}`;
   const responseJson = JSON.stringify(responseData, null, 4)
@@ -156,7 +172,8 @@ function generateMutationTest(
   method: string,
   url: string,
   responseData: any,
-  domain: string
+  domain: string,
+  options: TestGeneratorOptions
 ): string {
   const hookPath = `./${hookName}`;
   const responseJson = JSON.stringify(responseData, null, 4)
